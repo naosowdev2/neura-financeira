@@ -31,9 +31,24 @@ export function useTransactions() {
   const createTransaction = useMutation({
     mutationFn: async (transaction: any) => {
       if (!user) throw new Error('Not authenticated');
+      
+      const transactionData = { ...transaction, user_id: user.id };
+      
+      // Se é despesa de cartão de crédito, obter/criar a fatura correta
+      if (transactionData.credit_card_id && transactionData.type === 'expense' && !transactionData.invoice_id) {
+        const { data: invoiceId, error: invoiceError } = await supabase.rpc('get_or_create_invoice', {
+          p_credit_card_id: transactionData.credit_card_id,
+          p_transaction_date: transactionData.date,
+          p_user_id: user.id,
+        });
+        
+        if (invoiceError) throw invoiceError;
+        transactionData.invoice_id = invoiceId;
+      }
+      
       const { data, error } = await supabase
         .from('transactions')
-        .insert({ ...transaction, user_id: user.id })
+        .insert(transactionData)
         .select()
         .single();
       if (error) throw error;

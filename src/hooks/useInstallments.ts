@@ -93,6 +93,18 @@ export function useInstallments() {
       for (let i = 0; i < installmentsToCreate; i++) {
         const installmentNumber = input.starting_installment + i;  // 3, 4, 5, 6, 7, 8, 9
         const installmentDate = addIntervalByFrequency(startDate, input.frequency, i);
+        const installmentDateStr = formatDateOnly(installmentDate);
+        
+        // Se é cartão de crédito, determinar a fatura correta para esta parcela
+        let invoiceId = null;
+        if (input.credit_card_id) {
+          const { data } = await supabase.rpc('get_or_create_invoice', {
+            p_credit_card_id: input.credit_card_id,
+            p_transaction_date: installmentDateStr,
+            p_user_id: user.id,
+          });
+          invoiceId = data;
+        }
         
         transactions.push({
           user_id: user.id,
@@ -100,10 +112,11 @@ export function useInstallments() {
           status: 'pending',
           amount: installmentAmount,
           description: `${input.description} (${installmentNumber}/${input.total_installments})`,  // "3/9", "4/9", etc.
-          date: formatDateOnly(installmentDate),
+          date: installmentDateStr,
           category_id: input.category_id || null,
           account_id: input.account_id || null,
           credit_card_id: input.credit_card_id || null,
+          invoice_id: invoiceId,
           installment_group_id: group.id,
           installment_number: installmentNumber,
           total_installments: input.total_installments,  // 9 (total da compra)
