@@ -98,7 +98,7 @@ export function useInstallments() {
         // Se é cartão de crédito, determinar a fatura correta para esta parcela
         let invoiceId = null;
         if (input.credit_card_id) {
-          const { data } = await supabase.rpc('get_or_create_invoice', {
+          const { data } = await (supabase.rpc as any)('get_or_create_invoice', {
             p_credit_card_id: input.credit_card_id,
             p_transaction_date: installmentDateStr,
             p_user_id: user.id,

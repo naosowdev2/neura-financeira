@@ -36,7 +36,7 @@ export function useTransactions() {
       
       // Se é despesa de cartão de crédito, obter/criar a fatura correta
       if (transactionData.credit_card_id && transactionData.type === 'expense' && !transactionData.invoice_id) {
-        const { data: invoiceId, error: invoiceError } = await supabase.rpc('get_or_create_invoice', {
+        const { data: invoiceId, error: invoiceError } = await (supabase.rpc as any)('get_or_create_invoice', {
           p_credit_card_id: transactionData.credit_card_id,
           p_transaction_date: transactionData.date,
           p_user_id: user.id,
