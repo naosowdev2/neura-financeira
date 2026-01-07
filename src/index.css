@@ -1,0 +1,475 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* FinanceApp - Liveblocks-Inspired Dark Glassmorphism Design System */
+/* Note: Fonts are loaded via index.html for proper caching */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 24 95% 53%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 262 83% 58%;
+
+    --radius: 1rem;
+
+    --chart-income: 142 76% 36%;
+    --chart-expense: 0 84% 60%;
+    --chart-1: 262 83% 58%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 24 95% 53%;
+    --chart-4: 142 76% 36%;
+    --chart-5: 340 82% 52%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 5%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 262 83% 58%;
+  }
+
+  /* ========== DARK MODE - LIVEBLOCKS STYLE ========== */
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 24 95% 53%;
+    --warning-foreground: 0 0% 0%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 262 83% 58%;
+
+    --chart-income: 142 76% 45%;
+    --chart-expense: 0 72% 51%;
+    --chart-1: 262 83% 58%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 24 95% 53%;
+    --chart-4: 142 76% 45%;
+    --chart-5: 340 82% 60%;
+
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 262 83% 58%;
+  }
+
+  /* ========== BLUE THEME ========== */
+  .theme-blue:root,
+  .theme-blue.dark {
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 217 91% 60%;
+    --sidebar-primary: 217 91% 60%;
+    --chart-1: 217 91% 60%;
+  }
+
+  /* ========== PURPLE THEME ========== */
+  .theme-purple:root,
+  .theme-purple.dark {
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 262 83% 58%;
+    --sidebar-primary: 262 83% 58%;
+    --chart-1: 262 83% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Custom scrollbar for dark mode */
+  .dark ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+}
+
+@layer utilities {
+  /* ========== GLASSMORPHISM ========== */
+  .glass {
+    @apply backdrop-blur-xl;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 4px 24px -8px rgba(0, 0, 0, 0.5);
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300;
+  }
+
+  .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  /* ========== COLORED GLOWS ========== */
+  .glow-purple {
+    box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.5);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.5);
+  }
+
+  .glow-orange {
+    box-shadow: 0 0 40px -10px rgba(249, 115, 22, 0.5);
+  }
+
+  .glow-green {
+    box-shadow: 0 0 40px -10px rgba(34, 197, 94, 0.4);
+  }
+
+  /* ========== TEXT HIERARCHY ========== */
+  .text-white-90 {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .text-white-80 {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .text-white-60 {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .text-white-40 {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* ========== GRADIENT UTILITIES ========== */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-purple-400 via-blue-400 to-orange-400 bg-clip-text text-transparent;
+  }
+
+  .gradient-border {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(59, 130, 246, 0.3));
+    padding: 1px;
+  }
+
+  /* ========== DEPTH & 3D EFFECTS ========== */
+  .depth-card {
+    transform: perspective(1000px) rotateX(1deg);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .depth-card:hover {
+    transform: perspective(1000px) rotateX(0deg) translateY(-2px);
+  }
+
+  /* ========== PREMIUM CARD ========== */
+  .premium-card {
+    @apply backdrop-blur-xl rounded-2xl transition-all duration-300;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 8px 32px -8px rgba(0, 0, 0, 0.5);
+  }
+
+  .premium-card:hover {
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+      0 12px 40px -8px rgba(0, 0, 0, 0.6);
+  }
+
+  /* ========== ITEM HOVER STATES ========== */
+  .item-hover {
+    @apply transition-all duration-200;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .item-hover:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* ========== ANIMATIONS ========== */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    to {
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+    }
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Glow on hover for interactive elements */
+  .glow-on-hover {
+    @apply transition-all duration-300;
+  }
+
+  .glow-on-hover:hover,
+  .glow-on-hover:focus-visible {
+    box-shadow: 0 0 30px -5px rgba(139, 92, 246, 0.5);
+  }
+
+  /* Permanent active glow */
+  .glow-active {
+    box-shadow: 0 0 30px -5px rgba(139, 92, 246, 0.4);
+  }
+
+  /* Animação de pulse sutil para botões de IA */
+  @keyframes pulse-subtle {
+    0%, 100% {
+      box-shadow: 0 8px 32px -8px rgba(139, 92, 246, 0.6);
+    }
+    50% {
+      box-shadow: 0 8px 48px -8px rgba(139, 92, 246, 0.9);
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 3s ease-in-out infinite;
+  }
+
+  /* Animação de entrada sofisticada para botão Neura */
+  @keyframes neura-entrance {
+    0% {
+      opacity: 0;
+      transform: scale(0.85);
+      filter: blur(8px);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1.03);
+      filter: blur(0);
+    }
+    60% {
+      transform: scale(0.98);
+    }
+    80% {
+      transform: scale(1.01);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
+  }
+
+  .animate-neura-entrance {
+    animation: neura-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  /* Efeito ripple para botão Neura */
+  .neura-ripple {
+    @apply relative overflow-hidden;
+  }
+
+  .neura-ripple::before {
+    content: '';
+    @apply absolute inset-0 rounded-full;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 0.5s ease-out, opacity 0.3s ease-out;
+  }
+
+  .neura-ripple:hover::before {
+    transform: scale(2.5);
+    opacity: 1;
+  }
+
+  .neura-ripple:active::before {
+    transform: scale(3);
+    opacity: 0.5;
+    transition: transform 0.2s ease-out, opacity 0.1s ease-out;
+  }
+
+  /* Fade in animation */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  /* ========== CARD HOVER ANIMATIONS ========== */
+  .card-interactive {
+    @apply transition-all duration-300 ease-out cursor-pointer;
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  .card-hover-purple:hover {
+    box-shadow: 
+      0 0 0 1px rgba(139, 92, 246, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(139, 92, 246, 0.5);
+    border-color: rgba(139, 92, 246, 0.3);
+  }
+
+  .card-hover-blue:hover {
+    box-shadow: 
+      0 0 0 1px rgba(59, 130, 246, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(59, 130, 246, 0.5);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  .card-hover-green:hover {
+    box-shadow: 
+      0 0 0 1px rgba(34, 197, 94, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(34, 197, 94, 0.5);
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .card-hover-orange:hover {
+    box-shadow: 
+      0 0 0 1px rgba(249, 115, 22, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(249, 115, 22, 0.5);
+    border-color: rgba(249, 115, 22, 0.3);
+  }
+
+  .card-hover-red:hover {
+    box-shadow: 
+      0 0 0 1px rgba(239, 68, 68, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(239, 68, 68, 0.5);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  /* ========== SHIMMER SKELETON ========== */
+  @keyframes shimmer-slide {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer-slide 1.5s ease-in-out infinite;
+  }
+
+  /* ========== PERSPECTIVE GRID ========== */
+  .perspective-grid {
+    background-image: 
+      linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(500px) rotateX(60deg);
+    transform-origin: center top;
+    position: absolute;
+    top: 50%;
+    left: -50%;
+    right: -50%;
+    bottom: -100%;
+  }
+}
