@@ -49,7 +49,7 @@ export function FinancialSummaryBar({
       <Separator orientation="vertical" className="h-6 hidden sm:block" />
       
       <Link 
-        to="/planning" 
+        to="/planning?tab=savings" 
         className="flex items-center gap-1.5 sm:gap-2 hover:bg-muted/50 px-2 sm:px-3 py-1.5 rounded transition-colors min-w-fit"
       >
         <PiggyBank className="h-4 w-4 text-emerald-500 shrink-0" />

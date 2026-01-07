@@ -18,6 +18,7 @@ import { BalanceCards } from "@/components/dashboard/BalanceCards";
 import { MonthOverview } from "@/components/dashboard/MonthOverview";
 
 import { PendingExpensesCard } from "@/components/dashboard/PendingExpensesCard";
+import { PendingIncomeCard } from "@/components/dashboard/PendingIncomeCard";
 import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { BalanceEvolutionChart } from "@/components/dashboard/BalanceEvolutionChart";
@@ -121,7 +122,12 @@ export default function Dashboard() {
 
   const pendingExpenses = data?.pendingExpenses || [];
   const totalPending = pendingExpenses.reduce((sum: number, e: any) => sum + Number(e.amount), 0);
-  // Calculate pending income for the projected balance sheet
+  
+  // Pending income for the month
+  const pendingIncomeData = data?.pendingIncome || [];
+  const totalPendingIncome = pendingIncomeData.reduce((sum: number, e: any) => sum + Number(e.amount), 0);
+  
+  // Calculate pending income for the projected balance sheet (from recent transactions - legacy)
   const pendingIncome = data?.recentTransactions?.filter(
     (t: any) => t.type === 'income' && t.status === 'pending'
   ) || [];
@@ -228,6 +234,17 @@ export default function Dashboard() {
               <PendingExpensesCard 
                 pendingExpenses={pendingExpenses}
                 totalPending={totalPending}
+                monthLabel={format(selectedDate, "MMMM", { locale: ptBR })}
+              />
+            </motion.div>
+          )}
+
+          {/* Pending Income Card */}
+          {pendingIncomeData.length > 0 && (
+            <motion.div variants={itemVariants}>
+              <PendingIncomeCard 
+                pendingIncome={pendingIncomeData}
+                totalPending={totalPendingIncome}
                 monthLabel={format(selectedDate, "MMMM", { locale: ptBR })}
               />
             </motion.div>

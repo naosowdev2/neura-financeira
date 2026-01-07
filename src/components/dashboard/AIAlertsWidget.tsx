@@ -109,7 +109,7 @@ export function AIAlertsWidget() {
   const handleAlertAction = (alert: Alert) => {
     switch (alert.actionType) {
       case 'review_budget':
-        navigate('/planning');
+        navigate('/planning?tab=budgets');
         break;
       case 'reduce_spending':
         navigate('/categories');
@@ -120,11 +120,11 @@ export function AIAlertsWidget() {
       case 'view_details':
         // Navigate based on alert type
         if (alert.type === 'budget') {
-          navigate('/planning');
+          navigate('/planning?tab=budgets');
         } else if (alert.type === 'invoice') {
           navigate('/dashboard');
         } else if (alert.type === 'savings') {
-          navigate('/planning');
+          navigate('/planning?tab=savings');
         }
         break;
       default:

@@ -179,6 +179,20 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .lte('date', monthEnd)
         .order('date');
 
+      // Pending income for current month
+      const { data: pendingIncomeThisMonth } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .eq('user_id', user.id)
+        .eq('type', 'income')
+        .eq('status', 'pending')
+        .gte('date', monthStart)
+        .lte('date', monthEnd)
+        .order('date');
+
       // ALL future pending expenses (for global alert)
       const { data: allFuturePendingExpenses } = await supabase
         .from('transactions')
@@ -326,6 +340,7 @@ export function useDashboard(selectedDate: Date = new Date()) {
         recentTransactions: recentTransactions || [],
         chartTransactions: chartTransactions || [],
         pendingExpenses: pendingExpensesThisMonth || [],
+        pendingIncome: pendingIncomeThisMonth || [],
         futurePendingExpenses: allFuturePendingExpenses || [],
       };
     },

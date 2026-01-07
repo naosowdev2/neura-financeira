@@ -240,7 +240,7 @@ export function FinancialAssetsPanel({
               variant="outline" 
               size="sm" 
               className="w-full gap-1.5 mt-2"
-              onClick={() => window.location.href = '/planning'}
+              onClick={() => window.location.href = '/planning?tab=savings'}
             >
               <Plus className="h-3.5 w-3.5" /> Nova Meta
             </Button>

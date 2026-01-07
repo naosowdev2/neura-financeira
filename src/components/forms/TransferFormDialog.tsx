@@ -103,6 +103,45 @@ export function TransferFormDialog({ trigger }: Props) {
     
     if (sourceType === 'savings_goal' && destinationType === 'savings_goal') {
       // Savings Goal → Savings Goal (internal transfer between goals)
+      // Create transaction records for history tracking
+      const sourceGoal = savingsGoals?.find(g => g.id === sourceId);
+      const destGoal = savingsGoals?.find(g => g.id === destinationId);
+      
+      // Create withdrawal transaction from source goal
+      await createTransaction.mutateAsync({
+        description: `Transferência para: ${destGoal?.name || 'Cofrinho'}`,
+        amount: amount,
+        type: 'transfer',
+        date,
+        category_id: null,
+        notes: 'savings_goal_transfer',
+        status: 'confirmed',
+        is_recurring: false,
+        recurrence_rule: null,
+        account_id: null,
+        destination_account_id: null,
+        savings_goal_id: sourceId,
+        credit_card_id: null,
+      } as any);
+      
+      // Create deposit transaction to destination goal
+      await createTransaction.mutateAsync({
+        description: `Transferência de: ${sourceGoal?.name || 'Cofrinho'}`,
+        amount: amount,
+        type: 'transfer',
+        date,
+        category_id: null,
+        notes: 'savings_goal_transfer',
+        status: 'confirmed',
+        is_recurring: false,
+        recurrence_rule: null,
+        account_id: null,
+        destination_account_id: null,
+        savings_goal_id: destinationId,
+        credit_card_id: null,
+      } as any);
+      
+      // Update savings goal balances
       await withdraw.mutateAsync({
         id: sourceId,
         amount: amount,
