@@ -129,6 +129,47 @@ export function ExpenseFormDialog({ trigger }: Props) {
     };
   }, [amount, totalInstallments, startingInstallment, amountType, date, installmentFrequency]);
 
+  // Calculate which invoice this purchase will fall into (for credit card)
+  const invoiceInfo = useMemo(() => {
+    if (paymentMethod !== 'credit_card' || !creditCardId) return null;
+    
+    const selectedCard = creditCards.find(c => c.id === creditCardId);
+    if (!selectedCard) return null;
+    
+    const purchaseDate = new Date(date + 'T12:00:00');
+    const closingDay = selectedCard.closing_day || 1;
+    const dueDay = selectedCard.due_day || 10;
+    
+    // Calculate which month this purchase will be billed to
+    let billingMonth = purchaseDate.getMonth();
+    let billingYear = purchaseDate.getFullYear();
+    
+    // If purchase is after closing date, it goes to next month's invoice
+    if (purchaseDate.getDate() > closingDay) {
+      billingMonth++;
+      if (billingMonth > 11) {
+        billingMonth = 0;
+        billingYear++;
+      }
+    }
+    
+    const invoiceDate = new Date(billingYear, billingMonth, 1);
+    const dueDate = new Date(billingYear, billingMonth, dueDay);
+    
+    // If due day is before closing day, due date is in the next month
+    if (dueDay < closingDay) {
+      dueDate.setMonth(dueDate.getMonth() + 1);
+    }
+    
+    return {
+      invoiceDate,
+      dueDate,
+      closingDay,
+      dueDay,
+      cardName: selectedCard.name,
+    };
+  }, [paymentMethod, creditCardId, creditCards, date]);
+
   // Auto-categorization with AI
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -375,11 +416,32 @@ export function ExpenseFormDialog({ trigger }: Props) {
                   ))}
                 </SelectContent>
               </Select>
+              
+              {/* Invoice Info Indicator */}
+              {invoiceInfo && (
+                <Card className="bg-pink-500/10 border-pink-500/30">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CreditCard className="h-4 w-4 text-pink-400" />
+                      <span className="text-sm font-medium text-pink-400">Fatura de Referência</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Esta compra será lançada na fatura de{' '}
+                      <strong className="text-foreground">
+                        {format(invoiceInfo.invoiceDate, "MMMM/yyyy", { locale: ptBR })}
+                      </strong>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Vencimento: {format(invoiceInfo.dueDate, "dd/MM/yyyy", { locale: ptBR })}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
-          {/* Installment Section - Only for account payments */}
-          {paymentMethod === 'account' && (
+          {/* Installment Section - For both account and credit card payments */}
+          {(paymentMethod === 'account' || paymentMethod === 'credit_card') && (
             <div className="space-y-4 p-4 rounded-lg bg-secondary/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
