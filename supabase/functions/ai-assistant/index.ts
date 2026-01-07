@@ -12,33 +12,101 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // ============= SYNONYM DICTIONARY FOR SMART SEARCH =============
 const synonymDictionary: { [key: string]: string[] } = {
   // Bebidas
-  'bebida': ['cerveja', 'cervejas', 'vinho', 'vodka', 'whisky', 'whiskey', 'refrigerante', 'refri', 'suco', 'água', 'agua', 'energético', 'energetico', 'drink', 'drinks', 'chopp', 'chope', 'bar', 'bebidas'],
-  'bebidas': ['cerveja', 'cervejas', 'vinho', 'vodka', 'whisky', 'whiskey', 'refrigerante', 'refri', 'suco', 'água', 'agua', 'energético', 'energetico', 'drink', 'drinks', 'chopp', 'chope', 'bar', 'bebida'],
+  'bebida': ['cerveja', 'cervejas', 'vinho', 'vinhos', 'vodka', 'whisky', 'whiskey', 'rum', 'gin', 'cachaça', 'cachaca', 'tequila', 'refrigerante', 'refri', 'suco', 'sucos', 'água', 'agua', 'energético', 'energetico', 'red bull', 'monster', 'drink', 'drinks', 'drinque', 'chopp', 'chope', 'bar', 'bebidas', 'ice', 'caipirinha', 'espumante', 'champagne', 'licor', 'aperol', 'spritz', 'long neck', 'lata', 'litrão', 'litrao'],
+  'bebidas': ['cerveja', 'cervejas', 'vinho', 'vinhos', 'vodka', 'whisky', 'whiskey', 'rum', 'gin', 'cachaça', 'cachaca', 'tequila', 'refrigerante', 'refri', 'suco', 'sucos', 'água', 'agua', 'energético', 'energetico', 'red bull', 'monster', 'drink', 'drinks', 'drinque', 'chopp', 'chope', 'bar', 'bebida', 'ice', 'caipirinha', 'espumante', 'champagne', 'licor', 'aperol', 'spritz', 'long neck', 'lata', 'litrão', 'litrao'],
+  'cerveja': ['bebida', 'bebidas', 'cervejas', 'chopp', 'chope', 'bar', 'long neck', 'lata', 'litrão', 'litrao', 'heineken', 'brahma', 'skol', 'budweiser', 'corona', 'stella'],
+  'vinho': ['bebida', 'bebidas', 'vinhos', 'espumante', 'champagne', 'tinto', 'branco', 'rosé', 'rose', 'adega'],
   
-  // Comida
-  'comida': ['restaurante', 'lanche', 'almoço', 'almoco', 'jantar', 'refeição', 'refeicao', 'delivery', 'ifood', 'rappi', 'uber eats', 'pizza', 'hamburguer', 'sushi', 'padaria', 'café', 'cafe'],
-  'restaurante': ['comida', 'lanche', 'almoço', 'almoco', 'jantar', 'refeição', 'refeicao'],
+  // Comida/Alimentação
+  'comida': ['restaurante', 'restaurantes', 'lanche', 'lanches', 'lanchonete', 'almoço', 'almoco', 'jantar', 'café da manhã', 'cafe da manha', 'refeição', 'refeicao', 'refeições', 'refeicoes', 'delivery', 'ifood', 'rappi', 'uber eats', 'zé delivery', 'ze delivery', 'pizza', 'pizzaria', 'hamburguer', 'hamburger', 'burger', 'sushi', 'japonês', 'japones', 'padaria', 'café', 'cafe', 'cafeteria', 'fast food', 'mcdonald', 'mcdonalds', 'burger king', 'bk', 'subway', 'kfc', 'outback', 'madero', 'coco bambu', 'churrascaria', 'churrasco', 'rodizio', 'rodízio', 'buffet', 'self service', 'marmita', 'quentinha', 'dogão', 'dogao', 'hot dog', 'açaí', 'acai', 'sorvete', 'sorveteria', 'doce', 'doces', 'sobremesa', 'bolo', 'torta', 'pastel', 'coxinha', 'salgado', 'salgados', 'espetinho', 'tapioca', 'acarajé', 'acaraje', 'pão de queijo', 'pao de queijo'],
+  'restaurante': ['comida', 'lanche', 'almoço', 'almoco', 'jantar', 'refeição', 'refeicao', 'restaurantes'],
+  'lanche': ['comida', 'lanchonete', 'lanches', 'fast food', 'hamburguer', 'hot dog', 'salgado'],
+  'delivery': ['ifood', 'rappi', 'uber eats', 'zé delivery', 'ze delivery', 'entrega', 'app de comida', 'pedido'],
+  'ifood': ['delivery', 'rappi', 'uber eats', 'zé delivery', 'ze delivery', 'comida', 'restaurante', 'entrega'],
+  'pizza': ['pizzaria', 'delivery', 'ifood', 'comida'],
   
   // Transporte
-  'transporte': ['uber', 'táxi', 'taxi', '99', 'ônibus', 'onibus', 'metrô', 'metro', 'combustível', 'combustivel', 'gasolina', 'etanol', 'estacionamento'],
-  'uber': ['táxi', 'taxi', '99', 'transporte', 'corrida'],
+  'transporte': ['uber', 'táxi', 'taxi', '99', '99pop', 'ônibus', 'onibus', 'metrô', 'metro', 'trem', 'vlt', 'brt', 'combustível', 'combustivel', 'gasolina', 'etanol', 'álcool', 'alcool', 'diesel', 'gnv', 'gás', 'gas', 'estacionamento', 'pedágio', 'pedagio', 'zona azul', 'estaciona', 'garagem', 'ipva', 'licenciamento', 'dpvat', 'seguro auto', 'seguro carro', 'moto', 'bicicleta', 'bike', 'patinete', 'scooter', 'passagem', 'bilhete', 'bilhete único', 'bilhete unico'],
+  'uber': ['táxi', 'taxi', '99', '99pop', 'transporte', 'corrida', 'viagem', 'app transporte', 'indriver', 'cabify'],
+  'taxi': ['uber', '99', 'transporte', 'corrida', 'táxi'],
+  '99': ['uber', 'táxi', 'taxi', 'transporte', 'corrida', '99pop'],
+  'gasolina': ['combustível', 'combustivel', 'posto', 'abastecimento', 'etanol', 'álcool', 'alcool', 'diesel', 'tanque'],
+  'combustivel': ['gasolina', 'etanol', 'álcool', 'alcool', 'diesel', 'gnv', 'posto', 'abastecimento'],
+  'estacionamento': ['estaciona', 'zona azul', 'garagem', 'vaga', 'parking'],
   
   // Saúde
-  'saude': ['farmácia', 'farmacia', 'remédio', 'remedio', 'medicamento', 'médico', 'medico', 'hospital', 'exame', 'consulta', 'drogaria'],
+  'saude': ['farmácia', 'farmacia', 'remédio', 'remedio', 'remédios', 'remedios', 'medicamento', 'medicamentos', 'médico', 'medico', 'hospital', 'clínica', 'clinica', 'exame', 'exames', 'consulta', 'consultas', 'drogaria', 'drogas', 'droga raia', 'pacheco', 'drogasil', 'ultrafarma', 'dentista', 'odonto', 'odontológico', 'odontologico', 'psicólogo', 'psicologo', 'psiquiatra', 'fisioterapia', 'fisio', 'nutricionista', 'nutri', 'academia', 'gym', 'personal', 'plano de saúde', 'plano de saude', 'unimed', 'bradesco saude', 'amil', 'sulamerica', 'hapvida', 'notredame', 'óculos', 'oculos', 'ótica', 'otica', 'lente', 'lentes'],
+  'farmacia': ['farmácia', 'remédio', 'remedio', 'medicamento', 'drogaria', 'saúde', 'saude', 'droga raia', 'pacheco', 'drogasil', 'ultrafarma', 'pague menos', 'panvel', 'venancio'],
   'farmácia': ['farmacia', 'remédio', 'remedio', 'medicamento', 'drogaria', 'saúde', 'saude'],
-  'farmacia': ['farmácia', 'remédio', 'remedio', 'medicamento', 'drogaria', 'saúde', 'saude'],
+  'remedio': ['remédio', 'remédios', 'remedios', 'medicamento', 'medicamentos', 'farmácia', 'farmacia', 'drogaria'],
+  'medico': ['médico', 'consulta', 'hospital', 'clínica', 'clinica', 'exame', 'saúde', 'saude', 'doutor', 'dr'],
+  'academia': ['gym', 'personal', 'musculação', 'musculacao', 'smartfit', 'smart fit', 'bluefit', 'blue fit', 'treino', 'fitness'],
   
-  // Compras
-  'mercado': ['supermercado', 'feira', 'hortifruti', 'açougue', 'acougue', 'mercearia', 'atacadão', 'atacadao'],
-  'supermercado': ['mercado', 'feira', 'hortifruti', 'açougue', 'acougue', 'mercearia'],
+  // Mercado/Supermercado
+  'mercado': ['supermercado', 'super', 'feira', 'hortifruti', 'horti', 'hortifrutti', 'açougue', 'acougue', 'mercearia', 'atacadão', 'atacadao', 'atacarejo', 'assaí', 'assai', 'extra', 'pão de açúcar', 'pao de acucar', 'carrefour', 'walmart', 'big', 'sam', 'sams club', 'costco', 'makro', 'dia', 'guanabara', 'prezunic', 'mundial', 'st marche', 'hirota', 'natural da terra', 'zone sul', 'compras', 'compra'],
+  'supermercado': ['mercado', 'super', 'feira', 'hortifruti', 'açougue', 'acougue', 'mercearia', 'atacadão', 'atacadao'],
+  'feira': ['mercado', 'hortifruti', 'frutas', 'verduras', 'legumes', 'orgânico', 'organico', 'feirinha'],
   
   // Lazer/Entretenimento
-  'lazer': ['cinema', 'teatro', 'show', 'festa', 'bar', 'balada', 'netflix', 'spotify', 'streaming', 'jogo', 'game'],
-  'streaming': ['netflix', 'spotify', 'disney', 'hbo', 'amazon prime', 'youtube', 'globoplay'],
+  'lazer': ['cinema', 'teatro', 'show', 'shows', 'festa', 'festas', 'bar', 'bares', 'balada', 'boate', 'club', 'clube', 'netflix', 'spotify', 'streaming', 'jogo', 'jogos', 'game', 'games', 'videogame', 'ps5', 'playstation', 'xbox', 'nintendo', 'switch', 'steam', 'passeio', 'viagem', 'viagens', 'turismo', 'hotel', 'pousada', 'airbnb', 'parque', 'praia', 'piscina', 'zoo', 'zoológico', 'zoologico', 'museu', 'exposição', 'exposicao', 'ingresso', 'ingressos', 'evento', 'eventos', 'diversão', 'diversao'],
+  'streaming': ['netflix', 'spotify', 'disney', 'disney+', 'hbo', 'hbo max', 'max', 'amazon prime', 'prime video', 'youtube', 'youtube premium', 'globoplay', 'paramount', 'star+', 'apple tv', 'deezer', 'tidal', 'crunchyroll', 'twitch'],
+  'netflix': ['streaming', 'assinatura', 'mensalidade', 'série', 'serie', 'filme'],
+  'spotify': ['streaming', 'música', 'musica', 'assinatura', 'mensalidade', 'deezer'],
+  'cinema': ['filme', 'filmes', 'cinemark', 'cinepolis', 'uci', 'kinoplex', 'ingresso', 'pipoca'],
+  'jogo': ['jogos', 'game', 'games', 'videogame', 'playstation', 'xbox', 'steam', 'gamer'],
+  'viagem': ['viagens', 'turismo', 'hotel', 'passagem', 'aéreo', 'aereo', 'avião', 'aviao', 'latam', 'gol', 'azul', 'decolar', 'booking', 'airbnb', 'hospedagem', 'pousada', 'resort', '123milhas', 'hurb', 'cvc'],
   
-  // Vestuário
-  'roupa': ['roupas', 'vestuário', 'vestuario', 'calçado', 'calcado', 'tênis', 'tenis', 'sapato', 'camisa', 'calça', 'calca', 'loja'],
-  'roupas': ['roupa', 'vestuário', 'vestuario', 'calçado', 'calcado', 'tênis', 'tenis', 'sapato', 'camisa', 'calça', 'calca', 'loja'],
+  // Vestuário/Moda
+  'roupa': ['roupas', 'vestuário', 'vestuario', 'calçado', 'calcado', 'tênis', 'tenis', 'sapato', 'sapatos', 'camisa', 'camisas', 'camiseta', 'calça', 'calca', 'calças', 'calcas', 'short', 'shorts', 'bermuda', 'vestido', 'saia', 'blusa', 'casaco', 'jaqueta', 'moletom', 'cueca', 'calcinha', 'sutiã', 'sutia', 'meia', 'meias', 'loja', 'shopping', 'renner', 'riachuelo', 'cea', 'c&a', 'marisa', 'zara', 'hering', 'centauro', 'netshoes', 'nike', 'adidas', 'puma', 'olympikus', 'arezzo', 'schutz', 'havaianas', 'melissa', 'shein', 'shopee', 'aliexpress', 'amazon', 'americanas', 'magazine luiza', 'magalu', 'casas bahia'],
+  'roupas': ['roupa', 'vestuário', 'vestuario', 'moda', 'loja', 'shopping'],
+  'tenis': ['tênis', 'calçado', 'calcado', 'sapato', 'nike', 'adidas', 'puma', 'centauro', 'netshoes'],
+  'sapato': ['sapatos', 'calçado', 'calcado', 'tênis', 'tenis', 'sandália', 'sandalia', 'chinelo', 'bota'],
+  
+  // Moradia/Casa
+  'casa': ['moradia', 'aluguel', 'condomínio', 'condominio', 'iptu', 'água', 'agua', 'luz', 'energia', 'gás', 'gas', 'internet', 'telefone', 'celular', 'seguro residencial', 'manutenção', 'manutencao', 'reforma', 'móveis', 'moveis', 'eletrodoméstico', 'eletrodomestico', 'decoração', 'decoracao'],
+  'aluguel': ['moradia', 'casa', 'apartamento', 'apto', 'imóvel', 'imovel', 'locação', 'locacao', 'mensalidade'],
+  'condominio': ['condomínio', 'taxa', 'prédio', 'predio', 'apartamento'],
+  'luz': ['energia', 'conta de luz', 'enel', 'light', 'cpfl', 'cemig', 'eletropaulo', 'copel', 'celesc'],
+  'agua': ['água', 'conta de água', 'sabesp', 'copasa', 'cedae', 'saneago', 'cagece'],
+  'internet': ['wifi', 'wi-fi', 'net', 'claro', 'vivo', 'tim', 'oi', 'banda larga', 'fibra'],
+  
+  // Educação
+  'educacao': ['educação', 'escola', 'faculdade', 'universidade', 'curso', 'cursos', 'aula', 'aulas', 'livro', 'livros', 'material escolar', 'mensalidade', 'matrícula', 'matricula', 'uniforme', 'inglês', 'ingles', 'idioma', 'idiomas', 'udemy', 'coursera', 'alura', 'rocketseat'],
+  'escola': ['educação', 'educacao', 'mensalidade', 'matrícula', 'matricula', 'uniforme', 'material escolar', 'filho', 'criança', 'crianca'],
+  'faculdade': ['universidade', 'curso', 'graduação', 'graduacao', 'pós', 'pos', 'mestrado', 'doutorado', 'mba', 'mensalidade'],
+  'curso': ['cursos', 'aula', 'aulas', 'treinamento', 'capacitação', 'capacitacao', 'workshop', 'bootcamp'],
+  
+  // Pets/Animais
+  'pet': ['pets', 'animal', 'animais', 'cachorro', 'cão', 'cao', 'gato', 'ração', 'racao', 'petshop', 'pet shop', 'veterinário', 'veterinario', 'vet', 'banho', 'tosa', 'cobasi', 'petz', 'petlove'],
+  'cachorro': ['cão', 'cao', 'pet', 'animal', 'ração', 'racao', 'veterinário', 'veterinario'],
+  'gato': ['pet', 'animal', 'ração', 'racao', 'veterinário', 'veterinario', 'areia', 'felino'],
+  
+  // Tecnologia/Eletrônicos
+  'tecnologia': ['eletrônico', 'eletronico', 'eletrônicos', 'eletronicos', 'celular', 'smartphone', 'iphone', 'samsung', 'xiaomi', 'motorola', 'notebook', 'computador', 'pc', 'tablet', 'ipad', 'tv', 'televisão', 'televisao', 'fone', 'headphone', 'airpods', 'smart', 'gadget', 'kabum', 'pichau', 'terabyte', 'amazon', 'mercado livre', 'magalu'],
+  'celular': ['smartphone', 'iphone', 'samsung', 'xiaomi', 'motorola', 'telefone', 'aparelho', 'chip', 'plano'],
+  'computador': ['notebook', 'laptop', 'pc', 'desktop', 'mac', 'macbook', 'dell', 'lenovo', 'hp', 'asus', 'acer'],
+  
+  // Beleza/Cuidados Pessoais
+  'beleza': ['cabelo', 'cabeleireiro', 'salão', 'salao', 'manicure', 'pedicure', 'unha', 'unhas', 'maquiagem', 'make', 'cosmético', 'cosmetico', 'perfume', 'skincare', 'hidratante', 'shampoo', 'condicionador', 'barbearia', 'barba', 'depilação', 'depilacao', 'estética', 'estetica', 'spa', 'massagem'],
+  'cabelo': ['cabeleireiro', 'salão', 'salao', 'corte', 'tintura', 'escova', 'progressiva'],
+  'salao': ['salão', 'cabeleireiro', 'manicure', 'beleza'],
+  
+  // Finanças/Investimentos
+  'investimento': ['investimentos', 'aplicação', 'aplicacao', 'poupança', 'poupanca', 'cdb', 'lci', 'lca', 'tesouro', 'tesouro direto', 'fundo', 'fundos', 'ação', 'acao', 'ações', 'acoes', 'fii', 'cripto', 'bitcoin', 'btc', 'ethereum', 'eth', 'nubank', 'xp', 'rico', 'clear', 'avenue', 'inter', 'btg'],
+  'banco': ['bancos', 'tarifa', 'taxa', 'ted', 'pix', 'transferência', 'transferencia', 'saque', 'depósito', 'deposito', 'conta', 'nubank', 'itaú', 'itau', 'bradesco', 'santander', 'caixa', 'bb', 'banco do brasil', 'inter', 'c6', 'original', 'next', 'neon'],
+  
+  // Assinaturas/Serviços
+  'assinatura': ['assinaturas', 'mensalidade', 'plano', 'subscription', 'serviço', 'servico', 'recorrente', 'streaming', 'netflix', 'spotify', 'amazon prime', 'gym', 'academia', 'revista', 'jornal', 'software', 'app', 'aplicativo', 'icloud', 'google one', 'dropbox', 'chatgpt', 'openai'],
+  
+  // Presentes/Doações
+  'presente': ['presentes', 'gift', 'aniversário', 'aniversario', 'natal', 'dia das mães', 'dia das maes', 'dia dos pais', 'casamento', 'chá de bebê', 'cha de bebe', 'lembrancinha', 'mimo'],
+  'doacao': ['doação', 'doações', 'doacoes', 'caridade', 'ong', 'igreja', 'dízimo', 'dizimo', 'oferta', 'ajuda', 'vaquinha', 'vakinha'],
+  
+  // Seguros
+  'seguro': ['seguros', 'seguro auto', 'seguro carro', 'seguro vida', 'seguro residencial', 'seguro viagem', 'porto seguro', 'bradesco seguros', 'sulamerica', 'azul seguros', 'liberty', 'tokio marine', 'mapfre', 'allianz'],
+  
+  // Impostos/Taxas
+  'imposto': ['impostos', 'taxa', 'taxas', 'ipva', 'iptu', 'ir', 'imposto de renda', 'darf', 'inss', 'contribuição', 'contribuicao', 'multa', 'juros'],
 };
 
 // Function to normalize text (remove accents, lowercase)
