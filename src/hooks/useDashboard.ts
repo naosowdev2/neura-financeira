@@ -155,16 +155,17 @@ export function useDashboard(selectedDate: Date = new Date()) {
 
       const monthExpenses = confirmedMonthExpenses + pendingMonthExpenses;
 
-      // Projected balance = initial + all income - all expenses (confirmed + pending) for the month
-      const allMonthIncome = (allMonthTransactions || [])
-        .filter((t) => t.type === 'income' && !t.savings_goal_id)
+      // Calculate pending income and expenses for projection
+      const pendingIncomeTotal = (allMonthTransactions || [])
+        .filter((t) => t.type === 'income' && t.status === 'pending' && !t.savings_goal_id)
         .reduce((sum, t) => sum + Number(t.amount), 0);
       
-      const allMonthExpenses = (allMonthTransactions || [])
-        .filter((t) => t.type === 'expense' && !t.savings_goal_id)
+      const pendingExpensesTotal = (allMonthTransactions || [])
+        .filter((t) => t.type === 'expense' && t.status === 'pending' && !t.savings_goal_id)
         .reduce((sum, t) => sum + Number(t.amount), 0);
 
-      const projectedBalance = initialMonthBalance + allMonthIncome - allMonthExpenses;
+      // Projected balance = saldo disponível atual + receitas pendentes - despesas pendentes
+      const projectedBalance = totalBalance + pendingIncomeTotal - pendingExpensesTotal;
 
       // Pending expenses for current month alert
       const { data: pendingExpensesThisMonth } = await supabase
