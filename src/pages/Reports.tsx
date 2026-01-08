@@ -513,6 +513,7 @@ export default function Reports() {
               installmentGroups={installmentGroups || []}
               accounts={accounts || []}
               creditCards={creditCards || []}
+              transactions={transactions || []}
             />
 
             {/* Charts */}
