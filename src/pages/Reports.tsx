@@ -447,12 +447,12 @@ export default function Reports() {
                       <BarChart3 className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Saldo Atual</p>
-                      <p className={`text-2xl font-bold ${totalAccountBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        {formatCurrency(totalAccountBalance)}
+                      <p className="text-sm text-muted-foreground">Resultado do mês</p>
+                      <p className={`text-2xl font-bold ${totals.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                        {formatCurrency(totals.balance)}
                       </p>
-                      <p className={`text-xs ${totals.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                        Resultado do mês: {formatCurrency(totals.balance)}
+                      <p className="text-xs text-muted-foreground">
+                        Receitas - Despesas
                       </p>
                     </div>
                   </div>
