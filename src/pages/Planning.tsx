@@ -54,7 +54,7 @@ function DynamicIcon({ name, className, style }: { name: string; className?: str
 
 export default function Planning() {
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'budgets';
+  const defaultTab = searchParams.get('tab') || 'projections';
   
   const { budgets, isLoading: budgetsLoading, createBudget, updateBudget, deleteBudget } = useBudgets();
   const { savingsGoals, isLoading: goalsLoading, createSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contribute, withdraw } = useSavingsGoals();
@@ -256,31 +256,26 @@ export default function Planning() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-3 sm:grid-cols-5 h-auto">
-            <TabsTrigger value="projections" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+          <TabsList className="flex w-full max-w-3xl overflow-x-auto h-auto">
+            <TabsTrigger value="projections" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
               <Scale className="h-4 w-4" />
-              <span className="hidden xs:inline">Projeções</span>
-              <span className="xs:hidden">Proj.</span>
+              <span>Projeções</span>
             </TabsTrigger>
-            <TabsTrigger value="budgets" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <TabsTrigger value="budgets" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
               <Wallet className="h-4 w-4" />
-              <span className="hidden xs:inline">Orçamentos</span>
-              <span className="xs:hidden">Orçam.</span>
+              <span>Orçamentos</span>
             </TabsTrigger>
-            <TabsTrigger value="savings" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <TabsTrigger value="savings" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
               <PiggyBank className="h-4 w-4" />
-              <span className="hidden xs:inline">Cofrinhos</span>
-              <span className="xs:hidden">Cofres</span>
+              <span>Cofrinhos</span>
             </TabsTrigger>
-            <TabsTrigger value="recurrences" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <TabsTrigger value="recurrences" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
               <RefreshCcw className="h-4 w-4" />
-              <span className="hidden xs:inline">Recorrências</span>
-              <span className="xs:hidden">Recorr.</span>
+              <span>Recorrências</span>
             </TabsTrigger>
-            <TabsTrigger value="installments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <TabsTrigger value="installments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
               <Layers className="h-4 w-4" />
-              <span className="hidden xs:inline">Parcelas</span>
-              <span className="xs:hidden">Parc.</span>
+              <span>Parcelas</span>
             </TabsTrigger>
           </TabsList>
 

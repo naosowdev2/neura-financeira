@@ -25,7 +25,7 @@ const navItems = [{
   label: "Relatórios",
   icon: FileText
 }, {
-  path: "/planning",
+  path: "/planning?tab=projections",
   label: "Planejamento",
   icon: Target
 }, {
