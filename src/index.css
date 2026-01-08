@@ -487,4 +487,14 @@
     right: -50%;
     bottom: -100%;
   }
+
+  /* ========== SCROLLBAR HIDE ========== */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
