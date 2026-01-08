@@ -283,6 +283,17 @@ export function useDashboard(selectedDate: Date = new Date()) {
         })
       );
 
+      // Fetch savings goals for total calculation
+      const { data: savingsGoals } = await supabase
+        .from('savings_goals')
+        .select('current_amount')
+        .eq('user_id', user.id);
+
+      const totalSavingsGoals = (savingsGoals || []).reduce(
+        (sum, goal) => sum + Number(goal.current_amount || 0),
+        0
+      );
+
       // Fetch upcoming transactions (pending)
       const { data: upcomingTransactions } = await supabase
         .from('transactions')
@@ -329,6 +340,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
         initialMonthBalance,
         currentBalance,
         projectedBalance,
+        totalSavingsGoals,
+        netWorth: currentBalance + totalSavingsGoals,
         monthIncome,
         monthExpenses,
         confirmedMonthExpenses,

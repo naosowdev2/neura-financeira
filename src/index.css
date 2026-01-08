@@ -444,7 +444,22 @@
     border-color: rgba(239, 68, 68, 0.3);
   }
 
-  /* ========== SHIMMER SKELETON ========== */
+  .card-hover-amber:hover {
+    box-shadow: 
+      0 0 0 1px rgba(245, 158, 11, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(245, 158, 11, 0.5);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  .card-hover-emerald:hover {
+    box-shadow: 
+      0 0 0 1px rgba(16, 185, 129, 0.2) inset,
+      0 20px 50px -15px rgba(0, 0, 0, 0.6),
+      0 0 50px -15px rgba(16, 185, 129, 0.5);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
   @keyframes shimmer-slide {
     0% {
       transform: translateX(-100%);
