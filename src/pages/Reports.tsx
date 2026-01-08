@@ -19,7 +19,8 @@ import {
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useSearchParams } from "react-router-dom";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
+import { ExpenseChart } from "@/components/dashboard/ExpenseChart";
 import { AISpendingAnalysis } from "@/components/reports/AISpendingAnalysis";
 import { MonthComparisonChart } from "@/components/reports/MonthComparisonChart";
 import { AnnualProjectionChart } from "@/components/reports/AnnualProjectionChart";
@@ -518,48 +519,8 @@ export default function Reports() {
 
             {/* Charts */}
             <div className="grid gap-6 lg:grid-cols-2">
-              {/* Expenses Pie Chart */}
-              <Card className="glass">
-                <CardHeader>
-                  <CardTitle className="text-lg">Despesas por Categoria</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {expensesByCategory.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      Nenhuma despesa neste mês
-                    </p>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                        <Pie
-                          data={expensesByCategory}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={2}
-                          dataKey="value"
-                        >
-                          {expensesByCategory.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value: number) => formatCurrency(value)}
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px'
-                          }}
-                          labelStyle={{ color: 'hsl(var(--foreground))' }}
-                          itemStyle={{ color: 'hsl(var(--foreground))' }}
-                        />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Expenses Pie Chart - Reusing Dashboard component */}
+              <ExpenseChart data={expensesByCategory} />
 
               {/* Daily Bar Chart */}
               <Card className="glass">
