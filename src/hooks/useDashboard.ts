@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { startOfMonth, endOfMonth, format, subMonths, isBefore, isAfter, isSameMonth } from 'date-fns';
+import { parseDateOnly } from '@/lib/utils';
 
 export function useDashboard(selectedDate: Date = new Date()) {
   const { user } = useAuth();
@@ -245,7 +246,7 @@ export function useDashboard(selectedDate: Date = new Date()) {
 
           // Filter invoices for current month
           const currentMonthInvoice = (invoices || []).find((inv: any) => 
-            format(new Date(inv.reference_month), 'yyyy-MM') === currentMonth
+            format(parseDateOnly(inv.reference_month), 'yyyy-MM') === currentMonth
           );
 
           let currentInvoice = currentMonthInvoice?.total_amount ?? 0;
@@ -262,7 +263,7 @@ export function useDashboard(selectedDate: Date = new Date()) {
           // Filter orphans that belong to current billing month (respecting closing_day)
           const orphanTotal = (orphanTxns || [])
             .filter((t: any) => {
-              const txnDate = new Date(t.date);
+              const txnDate = parseDateOnly(t.date);
               const billingMonth = getBillingMonthForCard(txnDate, closingDay);
               return format(billingMonth, 'yyyy-MM') === currentMonth;
             })
