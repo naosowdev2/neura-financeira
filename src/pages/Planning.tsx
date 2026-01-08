@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useSavingsGoals, SavingsGoal } from "@/hooks/useSavingsGoals";
@@ -55,6 +56,7 @@ function DynamicIcon({ name, className, style }: { name: string; className?: str
 export default function Planning() {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'projections';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   
   const { budgets, isLoading: budgetsLoading, createBudget, updateBudget, deleteBudget } = useBudgets();
   const { savingsGoals, isLoading: goalsLoading, createSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contribute, withdraw } = useSavingsGoals();
@@ -255,8 +257,8 @@ export default function Planning() {
       />
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue={defaultTab} className="space-y-6">
-          <div className="relative">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <div className="relative flex justify-center">
             {/* Fade indicators for scroll */}
             <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 md:hidden" />
             <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
@@ -301,12 +303,34 @@ export default function Planning() {
           </div>
 
           {/* Projeções Tab */}
-          <TabsContent value="projections" className="space-y-6">
-            <ProjectionsTab />
+          <TabsContent value="projections" className="space-y-6" forceMount>
+            <AnimatePresence mode="wait">
+              {activeTab === "projections" && (
+                <motion.div
+                  key="projections"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <ProjectionsTab />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </TabsContent>
 
           {/* Orçamentos Tab */}
-          <TabsContent value="budgets" className="space-y-6">
+          <TabsContent value="budgets" className="space-y-6" forceMount>
+            <AnimatePresence mode="wait">
+              {activeTab === "budgets" && (
+                <motion.div
+                  key="budgets"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="space-y-6"
+                >
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">Orçamentos</h2>
@@ -453,10 +477,23 @@ export default function Planning() {
                 })}
               </div>
             )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </TabsContent>
 
           {/* Cofrinhos Tab */}
-          <TabsContent value="savings" className="space-y-6">
+          <TabsContent value="savings" className="space-y-6" forceMount>
+            <AnimatePresence mode="wait">
+              {activeTab === "savings" && (
+                <motion.div
+                  key="savings"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="space-y-6"
+                >
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">Cofrinhos</h2>
@@ -771,16 +808,43 @@ export default function Planning() {
                 })}
               </div>
             )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </TabsContent>
 
           {/* Recorrências Tab */}
-          <TabsContent value="recurrences" className="space-y-6">
-            <RecurrencesTab />
+          <TabsContent value="recurrences" className="space-y-6" forceMount>
+            <AnimatePresence mode="wait">
+              {activeTab === "recurrences" && (
+                <motion.div
+                  key="recurrences"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <RecurrencesTab />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </TabsContent>
 
           {/* Parcelamentos Tab */}
-          <TabsContent value="installments" className="space-y-6">
-            <InstallmentsTab />
+          <TabsContent value="installments" className="space-y-6" forceMount>
+            <AnimatePresence mode="wait">
+              {activeTab === "installments" && (
+                <motion.div
+                  key="installments"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <InstallmentsTab />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </TabsContent>
         </Tabs>
       </main>
