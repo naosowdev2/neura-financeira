@@ -124,18 +124,30 @@ export function AppHeader() {
             </TooltipProvider>
           )}
           
-          <Link to="/settings" className="relative group">
-            <RippleButton variant="ghost" size="icon" className={cn(
-              "hover:bg-white/[0.08] transition-all duration-200",
-              location.pathname === "/settings" && "text-primary bg-primary/10"
-            )}>
-              <Settings className="h-5 w-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-45" />
-            </RippleButton>
-            {/* Badge de atualização disponível */}
-            {needRefresh && (
-              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]" />
-            )}
-          </Link>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link to="/settings" className="relative group">
+                  <RippleButton variant="ghost" size="icon" className={cn(
+                    "hover:bg-white/[0.08] transition-all duration-200",
+                    location.pathname === "/settings" && "text-primary bg-primary/10"
+                  )}>
+                    <Settings className="h-5 w-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-45" />
+                  </RippleButton>
+                  {/* Badge de atualização disponível */}
+                  {needRefresh && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary animate-shake-badge shadow-[0_0_8px_hsl(var(--primary))]" />
+                  )}
+                </Link>
+              </TooltipTrigger>
+              {needRefresh && (
+                <TooltipContent side="bottom" className="bg-popover border-border">
+                  <p className="text-sm font-medium">Atualização disponível</p>
+                  <p className="text-xs text-muted-foreground">Clique para acessar as configurações</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
           <RippleButton variant="ghost" size="icon" onClick={handleSignOut} className="hover:bg-white/[0.08] group transition-all duration-200">
             <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
           </RippleButton>
