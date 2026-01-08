@@ -101,6 +101,30 @@ serve(async (req) => {
       .select('*, transactions:transactions(id, status, date, installment_number, amount)')
       .eq('user_id', userId);
 
+    // Get credit cards for limit monitoring
+    const { data: creditCards } = await supabase
+      .from('credit_cards')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_archived', false);
+
+    // Get ALL credit card invoices (for limit calculation)
+    const { data: allCreditCardInvoices } = await supabase
+      .from('credit_card_invoices')
+      .select('*')
+      .eq('user_id', userId)
+      .neq('status', 'paid');
+
+    // Get orphan credit card transactions (not yet assigned to invoice)
+    const { data: orphanCreditCardTxns } = await supabase
+      .from('transactions')
+      .select('amount, credit_card_id')
+      .eq('user_id', userId)
+      .eq('type', 'expense')
+      .eq('status', 'confirmed')
+      .is('invoice_id', null)
+      .not('credit_card_id', 'is', null);
+
     const alerts: Alert[] = [];
 
     // Calculate total balance from accounts using the proper calculation function
@@ -460,6 +484,50 @@ serve(async (req) => {
               },
             });
           }
+        }
+      }
+    }
+
+    // Alert 10: Credit card limit usage (80%+ warning, 95%+ critical)
+    if (creditCards && creditCards.length > 0) {
+      for (const card of creditCards) {
+        if (!card.credit_limit || card.credit_limit <= 0) continue;
+        
+        // Calculate total committed for this card
+        const cardInvoicesTotal = (allCreditCardInvoices || [])
+          .filter((inv: any) => inv.credit_card_id === card.id)
+          .reduce((sum: number, inv: any) => sum + (inv.total_amount || 0), 0);
+        
+        const cardOrphanTotal = (orphanCreditCardTxns || [])
+          .filter((t: any) => t.credit_card_id === card.id)
+          .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
+        
+        const totalCommitted = cardInvoicesTotal + cardOrphanTotal;
+        const usagePercent = (totalCommitted / card.credit_limit) * 100;
+        const available = card.credit_limit - totalCommitted;
+        
+        if (usagePercent >= 95) {
+          alerts.push({
+            id: `credit-limit-critical-${card.id}`,
+            type: 'invoice',
+            severity: 'critical',
+            title: `Limite quase esgotado: ${card.name}`,
+            message: `${usagePercent.toFixed(0)}% do limite comprometido. Apenas R$ ${available.toFixed(2)} disponível.`,
+            actionLabel: 'Ver cartão',
+            actionType: 'view_details',
+            metadata: { cardId: card.id },
+          });
+        } else if (usagePercent >= 80) {
+          alerts.push({
+            id: `credit-limit-warning-${card.id}`,
+            type: 'invoice',
+            severity: 'warning',
+            title: `Limite alto: ${card.name}`,
+            message: `${usagePercent.toFixed(0)}% do limite comprometido. Disponível: R$ ${available.toFixed(2)} de R$ ${card.credit_limit.toFixed(2)}.`,
+            actionLabel: 'Ver cartão',
+            actionType: 'view_details',
+            metadata: { cardId: card.id },
+          });
         }
       }
     }

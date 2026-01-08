@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getBillingMonth, parseDateOnly } from '@/lib/utils';
 import { ptBR } from 'date-fns/locale';
-import { Wallet, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon } from 'lucide-react';
+import { Wallet, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon, Info } from 'lucide-react';
+import { CreditLimitBreakdown } from '@/components/accounts/CreditLimitBreakdown';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -392,19 +393,29 @@ export default function Accounts() {
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Uso do Limite</span>
-                          <span>{usagePercent.toFixed(0)}%</span>
+                      <CreditLimitBreakdown
+                        cardId={card.id}
+                        creditLimit={card.credit_limit || 0}
+                        invoices={invoices}
+                        transactions={transactions}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              Uso do Limite
+                              <Info className="h-3 w-3 opacity-50" />
+                            </span>
+                            <span>{usagePercent.toFixed(0)}%</span>
+                          </div>
+                          <Progress 
+                            value={usagePercent} 
+                            className="h-2"
+                          />
+                          <p className="text-xs text-muted-foreground text-right">
+                            Limite: {formatCurrency(card.credit_limit || 0)}
+                          </p>
                         </div>
-                        <Progress 
-                          value={usagePercent} 
-                          className="h-2"
-                        />
-                        <p className="text-xs text-muted-foreground text-right">
-                          Limite: {formatCurrency(card.credit_limit || 0)}
-                        </p>
-                      </div>
+                      </CreditLimitBreakdown>
 
                       <div className="flex gap-2 mt-4">
                         {/* Pay Invoice Button - only show when invoice is closed */}
