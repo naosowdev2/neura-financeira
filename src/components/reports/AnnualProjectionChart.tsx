@@ -449,6 +449,41 @@ export function AnnualProjectionChart({
           </ResponsiveContainer>
         </div>
         
+        {/* Legend with category explanations */}
+        <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+          <p className="text-xs font-medium text-muted-foreground mb-2">Legenda das categorias:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div className="flex items-start gap-2">
+              <span className="w-3 h-3 rounded-full bg-success flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-medium text-foreground">Receitas:</span>
+                <span className="text-muted-foreground"> Entradas avulsas + recorrências fixas (salário, etc.)</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-3 h-3 rounded-full bg-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-medium text-foreground">Desp. Recorrentes:</span>
+                <span className="text-muted-foreground"> Despesas fixas sem prazo (aluguel, internet, etc.)</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-3 h-3 rounded-full bg-primary flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-medium text-foreground">Parcelamentos:</span>
+                <span className="text-muted-foreground"> Compras parceladas com número definido de parcelas</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-3 h-3 rounded-full bg-foreground/60 flex-shrink-0 mt-0.5" style={{ border: '2px dashed hsl(var(--foreground))' }} />
+              <div>
+                <span className="font-medium text-foreground">Saldo:</span>
+                <span className="text-muted-foreground"> Receitas - Despesas totais do mês</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Quarterly Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {quarterSummaries.map((quarter, i) => (
