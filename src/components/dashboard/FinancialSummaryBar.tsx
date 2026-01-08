@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Wallet, CreditCard, PiggyBank } from 'lucide-react';
+import { Landmark, CreditCard, PiggyBank } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface FinancialSummaryBarProps {
@@ -26,7 +26,7 @@ export function FinancialSummaryBar({
         to="/accounts" 
         className="flex items-center gap-1.5 sm:gap-2 hover:bg-muted/50 px-2 sm:px-3 py-1.5 rounded transition-colors min-w-fit"
       >
-        <Wallet className="h-4 w-4 text-emerald-500 shrink-0" />
+        <Landmark className="h-4 w-4 text-emerald-500 shrink-0" />
         <span className="text-xs text-muted-foreground hidden sm:inline">Contas</span>
         <span className={`text-sm font-semibold ${totalAccounts >= 0 ? 'text-emerald-600' : 'text-destructive'}`}>
           {formatCurrency(totalAccounts)}

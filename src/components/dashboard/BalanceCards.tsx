@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Landmark } from "lucide-react";
 import { ProjectedBalanceSheet } from "./ProjectedBalanceSheet";
@@ -43,6 +44,7 @@ export function BalanceCards({
   pendingIncome = [],
   selectedDate = new Date()
 }: Props) {
+  const navigate = useNavigate();
   const [projectedSheetOpen, setProjectedSheetOpen] = useState(false);
   const netWorth = currentBalance + totalSavingsGoals;
 
@@ -66,7 +68,11 @@ export function BalanceCards({
         </Card>
 
         {/* Saldo Disponível (nas contas) */}
-        <Card className="glass-hover animate-fade-in card-interactive card-hover-blue" style={{ animationDelay: '100ms' }}>
+        <Card 
+          className="glass-hover animate-fade-in card-interactive card-hover-blue cursor-pointer" 
+          style={{ animationDelay: '100ms' }}
+          onClick={() => navigate('/accounts')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-white/60">Saldo Disponível</CardTitle>
             <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/20">
@@ -82,7 +88,11 @@ export function BalanceCards({
         </Card>
 
         {/* Saldo em Metas */}
-        <Card className="glass-hover animate-fade-in card-interactive card-hover-amber" style={{ animationDelay: '200ms' }}>
+        <Card 
+          className="glass-hover animate-fade-in card-interactive card-hover-amber cursor-pointer" 
+          style={{ animationDelay: '200ms' }}
+          onClick={() => navigate('/planning?tab=savings')}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-white/60">Saldo em Metas</CardTitle>
             <div className="p-1.5 sm:p-2 rounded-lg bg-amber-500/20">
