@@ -134,9 +134,18 @@ export default function Dashboard() {
 
   // Calculate totals for FinancialSummaryBar
   const totalAccounts = (data?.accounts || []).reduce((sum: number, acc: any) => sum + Number(acc.current_balance || 0), 0);
-  const totalInvoices = invoices
-    .filter(inv => inv.status === 'open')
-    .reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+  
+  // Filter invoices by selected month
+  const totalInvoices = useMemo(() => {
+    const selectedMonth = format(selectedDate, 'yyyy-MM');
+    return invoices
+      .filter(inv => {
+        const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
+        return inv.status === 'open' && invoiceMonth === selectedMonth;
+      })
+      .reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+  }, [invoices, selectedDate]);
+  
   const totalSavings = (savingsGoals || []).reduce((sum, goal) => sum + (goal.current_amount || 0), 0);
 
   // Show loading state
