@@ -72,7 +72,7 @@ export default function Accounts() {
   const totalAccounts = accounts.reduce((sum, acc) => sum + (acc.calculated_balance ?? acc.current_balance ?? 0), 0);
   const activeAccountsCount = accounts.length;
 
-  // Get invoice amount for a card in the selected month
+  // Get invoice amount for a card in the selected month (for display purposes)
   const getCardCurrentInvoice = useMemo(() => {
     return (cardId: string) => {
       const selectedMonth = format(selectedDate, 'yyyy-MM');
@@ -107,13 +107,39 @@ export default function Accounts() {
     };
   }, [invoices, transactions, selectedDate, creditCards]);
 
-  // Calculate totals based on selected month
+  // Calculate TOTAL COMMITTED on each card (all unpaid invoices + orphan transactions)
+  // This reflects the REAL available credit limit
+  const getCardTotalCommitted = useMemo(() => {
+    return (cardId: string) => {
+      // 1. Sum of ALL unpaid invoices (status !== 'paid')
+      const unpaidInvoicesTotal = invoices
+        .filter(inv => inv.credit_card_id === cardId && inv.status !== 'paid')
+        .reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+      
+      // 2. Orphan transactions (without invoice_id) - not yet assigned to any invoice
+      const orphanTxns = transactions.filter(t => 
+        t.credit_card_id === cardId && 
+        !t.invoice_id && 
+        t.type === 'expense' && 
+        t.status === 'confirmed'
+      );
+      const orphanTotal = orphanTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      
+      return unpaidInvoicesTotal + orphanTotal;
+    };
+  }, [invoices, transactions]);
+
+  // Calculate totals based on selected month (for display)
   const totalInvoices = useMemo(() => {
     return creditCards.reduce((sum, card) => sum + getCardCurrentInvoice(card.id), 0);
   }, [creditCards, getCardCurrentInvoice]);
   
+  // Calculate REAL available limit based on total committed amount
   const totalLimit = creditCards.reduce((sum, card) => sum + (card.credit_limit || 0), 0);
-  const availableLimit = totalLimit - totalInvoices;
+  const totalCommitted = useMemo(() => {
+    return creditCards.reduce((sum, card) => sum + getCardTotalCommitted(card.id), 0);
+  }, [creditCards, getCardTotalCommitted]);
+  const availableLimit = totalLimit - totalCommitted;
 
   return (
     <div className="min-h-screen">
@@ -283,12 +309,15 @@ export default function Accounts() {
                 Nenhum cartão cadastrado
               </div>
             ) : (
-              creditCards.map((card) => {
+            creditCards.map((card) => {
                 const currentInvoice = getCardCurrentInvoice(card.id);
+                const cardTotalCommitted = getCardTotalCommitted(card.id);
+                // Usage percent is based on TOTAL COMMITTED, not just current month invoice
                 const usagePercent = card.credit_limit > 0 
-                  ? Math.min((currentInvoice / card.credit_limit) * 100, 100) 
+                  ? Math.min((cardTotalCommitted / card.credit_limit) * 100, 100) 
                   : 0;
-                const cardAvailableLimit = (card.credit_limit || 0) - currentInvoice;
+                // Available limit is based on TOTAL COMMITTED
+                const cardAvailableLimit = (card.credit_limit || 0) - cardTotalCommitted;
 
                 // Get invoice status for this card and month
                 const selectedMonth = format(selectedDate, 'yyyy-MM');
