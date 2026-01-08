@@ -132,6 +132,11 @@ export default {
           "0%, 100%": { transform: "scale(1)", filter: "drop-shadow(0 0 15px rgba(139,92,246,0.6))" },
           "50%": { transform: "scale(1.08)", filter: "drop-shadow(0 0 25px rgba(139,92,246,0.9))" },
         },
+        "shake-badge": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-2px)" },
+          "20%, 40%, 60%, 80%": { transform: "translateX(2px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -144,6 +149,7 @@ export default {
         "drop-highlight": "drop-highlight 0.5s ease-out forwards",
         "neura-wobble": "neura-wobble 0.6s ease-in-out",
         "neura-pulse": "neura-pulse 1.5s ease-in-out infinite",
+        "shake-badge": "shake-badge 0.6s ease-in-out",
       },
     },
   },
