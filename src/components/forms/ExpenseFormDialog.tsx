@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useCreditCards } from "@/hooks/useCreditCards";
+import { useCreditCardInvoices } from "@/hooks/useCreditCardInvoices";
 import { useInstallments } from "@/hooks/useInstallments";
 import { useCategories } from "@/hooks/useCategories";
 import { useRecurrences } from "@/hooks/useRecurrences";
 import { useAICategorize } from "@/hooks/useAI";
+import { CreditLimitImpactPreview } from "./CreditLimitImpactPreview";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -60,13 +62,15 @@ function addIntervalByFrequency(date: Date, frequency: FrequencyType, intervals:
 }
 
 export function ExpenseFormDialog({ trigger }: Props) {
-  const { createTransaction } = useTransactions();
+  const { transactions, createTransaction } = useTransactions();
   const { accounts } = useAccounts();
   const { creditCards } = useCreditCards();
+  const { invoices } = useCreditCardInvoices();
   const { createInstallment } = useInstallments();
   const { categories } = useCategories();
   const { createRecurrence } = useRecurrences();
   const { suggestCategory, isLoading: isAISuggesting } = useAICategorize();
+
 
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState('');
@@ -92,6 +96,12 @@ export function ExpenseFormDialog({ trigger }: Props) {
   const expenseCategories = useMemo(() => 
     categories.filter(c => c.type === 'expense'),
     [categories]
+  );
+
+  // Get selected credit card for limit impact preview
+  const selectedCreditCard = useMemo(() => 
+    creditCards.find(c => c.id === creditCardId),
+    [creditCards, creditCardId]
   );
 
   // Calculate which invoice this purchase will fall into (for credit card)
@@ -613,6 +623,16 @@ export function ExpenseFormDialog({ trigger }: Props) {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Credit Limit Impact Preview - show for credit card purchases */}
+          {paymentMethod === 'credit_card' && selectedCreditCard && amount > 0 && (
+            <CreditLimitImpactPreview
+              creditCard={selectedCreditCard}
+              purchaseAmount={installmentCalculation.totalAmount}
+              invoices={invoices}
+              transactions={transactions}
+            />
           )}
 
           {/* Recurring Section */}
