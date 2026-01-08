@@ -101,7 +101,7 @@ export function MobileNav() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="fixed left-0 top-0 bottom-0 z-50 w-72 bg-card border-r border-border shadow-2xl md:hidden"
+              className="fixed left-0 top-0 bottom-0 z-50 w-72 bg-background/95 backdrop-blur-xl border-r border-border shadow-2xl md:hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
