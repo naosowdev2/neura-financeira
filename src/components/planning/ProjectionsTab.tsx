@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,9 @@ import {
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useProjections, ProjectionTransaction } from "@/hooks/useProjections";
+import { useMultiMonthProjection } from "@/hooks/useMultiMonthProjection";
 import { ScenarioSimulator } from "./ScenarioSimulator";
+import { ScenarioItem } from "./AddScenarioDialog";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -38,8 +40,20 @@ export function ProjectionsTab() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [incomeOpen, setIncomeOpen] = useState(false);
   const [expensesOpen, setExpensesOpen] = useState(false);
+  
+  // Scenario state (elevated from ScenarioSimulator)
+  const [scenarios, setScenarios] = useState<ScenarioItem[]>([]);
+  const [scenarioBaseMonth, setScenarioBaseMonth] = useState<Date | null>(null);
+  const [simulatorSelectedDate, setSimulatorSelectedDate] = useState(new Date());
 
   const { data, isLoading } = useProjections(selectedDate);
+  
+  // Multi-month projection for the simulator
+  const { data: multiMonthData } = useMultiMonthProjection(
+    scenarioBaseMonth,
+    simulatorSelectedDate,
+    scenarios
+  );
 
   const handlePreviousMonth = () => {
     setSelectedDate(prev => subMonths(prev, 1));
@@ -47,6 +61,37 @@ export function ProjectionsTab() {
 
   const handleNextMonth = () => {
     setSelectedDate(prev => addMonths(prev, 1));
+  };
+
+  // Scenario handlers
+  const handleAddScenario = (scenario: ScenarioItem) => {
+    if (scenarios.length === 0) {
+      // Set the base month when first scenario is added
+      setScenarioBaseMonth(selectedDate);
+      setSimulatorSelectedDate(selectedDate);
+    }
+    setScenarios(prev => [...prev, scenario]);
+  };
+
+  const handleRemoveScenario = (id: string) => {
+    const newScenarios = scenarios.filter(s => s.id !== id);
+    setScenarios(newScenarios);
+    
+    // If all scenarios removed, reset base month
+    if (newScenarios.length === 0) {
+      setScenarioBaseMonth(null);
+      setSimulatorSelectedDate(selectedDate);
+    }
+  };
+
+  const handleClearScenarios = () => {
+    setScenarios([]);
+    setScenarioBaseMonth(null);
+    setSimulatorSelectedDate(selectedDate);
+  };
+
+  const handleSimulatorMonthChange = (date: Date) => {
+    setSimulatorSelectedDate(date);
   };
 
   const monthName = format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR });
@@ -71,6 +116,15 @@ export function ProjectionsTab() {
       </div>
     );
   }
+
+  // Get values for the simulator based on which month it's displaying
+  const simulatorProjectedIncome = multiMonthData?.monthBreakdown?.find(
+    m => format(m.month, 'yyyy-MM') === format(simulatorSelectedDate, 'yyyy-MM')
+  )?.projectedIncome ?? data.projectedIncome;
+  
+  const simulatorProjectedExpenses = multiMonthData?.monthBreakdown?.find(
+    m => format(m.month, 'yyyy-MM') === format(simulatorSelectedDate, 'yyyy-MM')
+  )?.projectedExpenses ?? data.projectedExpenses;
 
   return (
     <div className="space-y-6">
@@ -260,7 +314,24 @@ export function ProjectionsTab() {
       </Card>
 
       {/* Scenario Simulator */}
-      <ScenarioSimulator baseBalance={data.projectedBalance} />
+      <ScenarioSimulator 
+        baseBalance={data.projectedBalance}
+        projectedIncome={simulatorProjectedIncome}
+        projectedExpenses={simulatorProjectedExpenses}
+        initialBalance={data.initialBalance}
+        simulatedInitialBalance={multiMonthData?.simulatedInitialBalance}
+        simulatedProjectedBalance={multiMonthData?.simulatedProjectedBalance}
+        originalProjectedBalance={multiMonthData?.originalProjectedBalance}
+        scenarioImpactTotal={multiMonthData?.scenarioImpact}
+        isSimulating={multiMonthData?.isSimulating}
+        selectedDate={simulatorSelectedDate}
+        onMonthChange={handleSimulatorMonthChange}
+        scenarioBaseMonth={scenarioBaseMonth}
+        scenarios={scenarios}
+        onAddScenario={handleAddScenario}
+        onRemoveScenario={handleRemoveScenario}
+        onClearScenarios={handleClearScenarios}
+      />
     </div>
   );
 }

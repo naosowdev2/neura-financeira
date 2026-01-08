@@ -10,9 +10,21 @@ import {
   Trash2,
   TrendingUp,
   TrendingDown,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Info
 } from "lucide-react";
+import { format, addMonths, subMonths, isSameMonth, isBefore } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { AddScenarioDialog, ScenarioItem, ScenarioType } from "./AddScenarioDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -22,33 +34,55 @@ function formatCurrency(value: number) {
 }
 
 interface ScenarioSimulatorProps {
+  // Data from main projections tab
   baseBalance: number;
-  onMonthChange?: () => void;
+  projectedIncome: number;
+  projectedExpenses: number;
+  initialBalance: number;
+  // Multi-month simulation data
+  simulatedInitialBalance?: number;
+  simulatedProjectedBalance?: number;
+  originalProjectedBalance?: number;
+  scenarioImpactTotal?: number;
+  isSimulating?: boolean;
+  // Month navigation
+  selectedDate: Date;
+  onMonthChange: (date: Date) => void;
+  scenarioBaseMonth: Date | null;
+  // Scenario management (elevated state)
+  scenarios: ScenarioItem[];
+  onAddScenario: (scenario: ScenarioItem) => void;
+  onRemoveScenario: (id: string) => void;
+  onClearScenarios: () => void;
 }
 
-export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
-  const [scenarios, setScenarios] = useState<ScenarioItem[]>([]);
+export function ScenarioSimulator({ 
+  baseBalance,
+  projectedIncome,
+  projectedExpenses,
+  initialBalance,
+  simulatedInitialBalance,
+  simulatedProjectedBalance,
+  originalProjectedBalance,
+  scenarioImpactTotal = 0,
+  isSimulating = false,
+  selectedDate,
+  onMonthChange,
+  scenarioBaseMonth,
+  scenarios,
+  onAddScenario,
+  onRemoveScenario,
+  onClearScenarios,
+}: ScenarioSimulatorProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<ScenarioType>('income');
-
-  const handleAddScenario = (scenario: ScenarioItem) => {
-    setScenarios(prev => [...prev, scenario]);
-  };
-
-  const handleRemoveScenario = (id: string) => {
-    setScenarios(prev => prev.filter(s => s.id !== id));
-  };
-
-  const handleClearAll = () => {
-    setScenarios([]);
-  };
 
   const openDialog = (type: ScenarioType) => {
     setDialogType(type);
     setDialogOpen(true);
   };
 
-  // Calculate impact
+  // Calculate impact for this simulator's display
   const totalIncome = scenarios
     .filter(s => s.type === 'income')
     .reduce((sum, s) => sum + s.amount, 0);
@@ -58,9 +92,38 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
     .reduce((sum, s) => sum + s.amount, 0);
   
   const totalImpact = totalIncome - totalExpenses;
-  const simulatedBalance = baseBalance + totalImpact;
-
+  
   const hasScenarios = scenarios.length > 0;
+
+  // Month navigation
+  const handlePreviousMonth = () => {
+    // Don't go before the scenario base month
+    if (scenarioBaseMonth && isSameMonth(selectedDate, scenarioBaseMonth)) {
+      return;
+    }
+    onMonthChange(subMonths(selectedDate, 1));
+  };
+
+  const handleNextMonth = () => {
+    onMonthChange(addMonths(selectedDate, 1));
+  };
+
+  const monthName = format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR });
+  const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  
+  const isAtBaseMonth = scenarioBaseMonth && isSameMonth(selectedDate, scenarioBaseMonth);
+  const canGoBack = !scenarioBaseMonth || !isSameMonth(selectedDate, scenarioBaseMonth);
+
+  // Calculate display values
+  const displayInitialBalance = isSimulating && simulatedInitialBalance !== undefined 
+    ? simulatedInitialBalance 
+    : initialBalance;
+  
+  const displayFinalBalance = isSimulating && simulatedProjectedBalance !== undefined
+    ? simulatedProjectedBalance
+    : baseBalance + totalImpact;
+
+  const originalFinalBalance = originalProjectedBalance ?? baseBalance;
 
   return (
     <>
@@ -82,7 +145,7 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={handleClearAll}
+                onClick={onClearScenarios}
                 className="text-muted-foreground hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
@@ -93,13 +156,41 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Base Balance */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
-            <span className="text-sm text-muted-foreground">Saldo base do mês:</span>
-            <span className={`font-semibold ${baseBalance >= 0 ? 'text-foreground' : 'text-destructive'}`}>
-              {formatCurrency(baseBalance)}
-            </span>
-          </div>
+          {/* Month Navigator - only visible when simulating */}
+          {hasScenarios && (
+            <div className="p-3 rounded-lg bg-violet-500/5 border border-violet-500/20">
+              <div className="flex items-center justify-center gap-3">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handlePreviousMonth}
+                  disabled={!canGoBack}
+                  className="h-8 w-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-violet-400" />
+                  <span className="text-sm font-medium min-w-[140px] text-center">
+                    {capitalizedMonth}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleNextMonth}
+                  className="h-8 w-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              {scenarioBaseMonth && (
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  Cenários aplicados desde {format(scenarioBaseMonth, "MMM/yy", { locale: ptBR })}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Add Buttons */}
           <div className="grid grid-cols-2 gap-2">
@@ -125,9 +216,21 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
           {hasScenarios && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Cenários Adicionados
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Cenários Recorrentes
+                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[220px]">
+                        Estes cenários se repetem em cada mês projetado
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Badge variant="secondary" className="text-xs">
                   {scenarios.length}
                 </Badge>
@@ -138,7 +241,7 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
                   <ScenarioListItem 
                     key={scenario.id} 
                     scenario={scenario} 
-                    onRemove={handleRemoveScenario}
+                    onRemove={onRemoveScenario}
                   />
                 ))}
               </div>
@@ -148,12 +251,36 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
           {/* Impact Summary */}
           {hasScenarios && (
             <div className="space-y-3 pt-2 border-t border-violet-500/20">
-              {/* Total Impact */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
-                <span className="text-sm text-muted-foreground">Impacto Total:</span>
-                <span className={`font-semibold ${totalImpact >= 0 ? 'text-green-400' : 'text-orange-400'}`}>
-                  {totalImpact >= 0 ? '+' : ''}{formatCurrency(totalImpact)}
-                </span>
+              {/* Month Breakdown */}
+              <div className="space-y-2 p-3 rounded-lg bg-secondary/30">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Saldo Inicial (simulado):</span>
+                  <span className={displayInitialBalance >= 0 ? '' : 'text-destructive'}>
+                    {formatCurrency(displayInitialBalance)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">+ Receitas Previstas:</span>
+                  <span className="text-green-400">+{formatCurrency(projectedIncome)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">- Despesas Previstas:</span>
+                  <span className="text-orange-400">-{formatCurrency(projectedExpenses)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">+ Impacto dos Cenários:</span>
+                  <span className={totalImpact >= 0 ? 'text-green-400' : 'text-orange-400'}>
+                    {totalImpact >= 0 ? '+' : ''}{formatCurrency(totalImpact)}
+                  </span>
+                </div>
+                <div className="border-t border-border/50 pt-2 mt-2">
+                  <div className="flex items-center justify-between text-sm font-semibold">
+                    <span>Saldo Final Simulado:</span>
+                    <span className={displayFinalBalance >= 0 ? 'text-violet-400' : 'text-destructive'}>
+                      {formatCurrency(displayFinalBalance)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Comparison */}
@@ -161,15 +288,15 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
                 <div className="flex items-center justify-center gap-3 text-sm">
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground mb-1">Original</p>
-                    <p className={`font-semibold ${baseBalance >= 0 ? 'text-foreground' : 'text-destructive'}`}>
-                      {formatCurrency(baseBalance)}
+                    <p className={`font-semibold ${originalFinalBalance >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+                      {formatCurrency(originalFinalBalance)}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground mb-1">Simulado</p>
-                    <p className={`font-bold text-lg ${simulatedBalance >= 0 ? 'text-violet-400' : 'text-destructive'}`}>
-                      {formatCurrency(simulatedBalance)}
+                    <p className={`font-bold text-lg ${displayFinalBalance >= 0 ? 'text-violet-400' : 'text-destructive'}`}>
+                      {formatCurrency(displayFinalBalance)}
                     </p>
                   </div>
                 </div>
@@ -177,9 +304,13 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
                 <div className="text-center mt-2">
                   <Badge 
                     variant="outline" 
-                    className={`text-xs ${totalImpact >= 0 ? 'border-green-500/50 text-green-400' : 'border-orange-500/50 text-orange-400'}`}
+                    className={`text-xs ${
+                      displayFinalBalance - originalFinalBalance >= 0 
+                        ? 'border-green-500/50 text-green-400' 
+                        : 'border-orange-500/50 text-orange-400'
+                    }`}
                   >
-                    {totalImpact >= 0 ? '▲' : '▼'} {formatCurrency(Math.abs(totalImpact))}
+                    {displayFinalBalance - originalFinalBalance >= 0 ? '▲' : '▼'} {formatCurrency(Math.abs(displayFinalBalance - originalFinalBalance))}
                   </Badge>
                 </div>
               </div>
@@ -198,7 +329,7 @@ export function ScenarioSimulator({ baseBalance }: ScenarioSimulatorProps) {
       <AddScenarioDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onAdd={handleAddScenario}
+        onAdd={onAddScenario}
         initialType={dialogType}
       />
     </>
