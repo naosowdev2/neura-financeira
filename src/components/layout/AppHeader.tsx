@@ -8,6 +8,7 @@ import { MobileNav } from "./MobileNav";
 import neuraIcon from "@/assets/neura-icon.png";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOtherMonthsPending } from "@/hooks/useOtherMonthsPending";
+import { usePWA } from "@/hooks/usePWA";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PendingExpensesDetails } from "@/components/dashboard/PendingExpensesDetails";
 
@@ -39,6 +40,7 @@ export function AppHeader() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: otherMonthsPending } = useOtherMonthsPending();
+  const { needRefresh } = usePWA();
   const [showOtherMonthsDetails, setShowOtherMonthsDetails] = useState(false);
 
   const handleSignOut = async () => {
@@ -75,8 +77,13 @@ export function AppHeader() {
             const Icon = item.icon;
             return (
               <Link key={item.path} to={item.path}>
-                <RippleButton variant="ghost" size="sm" className={cn("relative px-3 py-2 transition-all duration-300", isActive ? "text-primary bg-primary/10 shadow-[0_0_20px_-5px_hsl(var(--primary)/0.5)]" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.08]")}>
-                  <Icon className="h-4 w-4 sm:mr-2" />
+                <RippleButton variant="ghost" size="sm" className={cn(
+                  "relative px-3 py-2 transition-all duration-300 group",
+                  isActive 
+                    ? "text-primary bg-primary/10 shadow-[0_0_20px_-5px_hsl(var(--primary)/0.5)]" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/[0.08]"
+                )}>
+                  <Icon className="h-4 w-4 sm:mr-2 transition-transform duration-200 group-hover:scale-110" />
                   <span className="hidden md:inline">{item.label}</span>
                   
                   {/* Active indicator bar */}
@@ -117,13 +124,20 @@ export function AppHeader() {
             </TooltipProvider>
           )}
           
-          <Link to="/settings">
-            <RippleButton variant="ghost" size="icon" className={cn("hover:bg-white/[0.08]", location.pathname === "/settings" && "text-primary bg-primary/10")}>
-              <Settings className="h-5 w-5" />
+          <Link to="/settings" className="relative group">
+            <RippleButton variant="ghost" size="icon" className={cn(
+              "hover:bg-white/[0.08] transition-all duration-200",
+              location.pathname === "/settings" && "text-primary bg-primary/10"
+            )}>
+              <Settings className="h-5 w-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-45" />
             </RippleButton>
+            {/* Badge de atualização disponível */}
+            {needRefresh && (
+              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]" />
+            )}
           </Link>
-          <RippleButton variant="ghost" size="icon" onClick={handleSignOut} className="hover:bg-white/[0.08]">
-            <LogOut className="h-5 w-5" />
+          <RippleButton variant="ghost" size="icon" onClick={handleSignOut} className="hover:bg-white/[0.08] group transition-all duration-200">
+            <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
           </RippleButton>
         </div>
       </div>
