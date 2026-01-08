@@ -71,14 +71,33 @@ export function MobileNav() {
 
   return (
     <>
-      {/* Hamburger Button */}
+      {/* Hamburger Button with animated icon */}
       <RippleButton
         variant="ghost"
         size="icon"
-        className="md:hidden hover:bg-white/[0.08]"
+        className="md:hidden hover:bg-white/[0.08] relative"
         onClick={() => setIsOpen(true)}
       >
-        <Menu className="h-5 w-5" />
+        <motion.div
+          className="flex flex-col justify-center items-center w-5 h-5 gap-[5px]"
+          initial={false}
+        >
+          <motion.span
+            className="block w-5 h-[2px] bg-current rounded-full origin-center"
+            animate={isOpen ? { rotate: 45, y: 3.5 } : { rotate: 0, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          />
+          <motion.span
+            className="block w-5 h-[2px] bg-current rounded-full"
+            animate={isOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.15, ease: "easeInOut" }}
+          />
+          <motion.span
+            className="block w-5 h-[2px] bg-current rounded-full origin-center"
+            animate={isOpen ? { rotate: -45, y: -3.5 } : { rotate: 0, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          />
+        </motion.div>
       </RippleButton>
 
       {/* Drawer Overlay and Content */}
