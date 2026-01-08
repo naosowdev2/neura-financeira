@@ -14,7 +14,7 @@ const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/accounts", label: "Contas", icon: Wallet },
   { path: "/reports", label: "Relatórios", icon: FileText },
-  { path: "/planning", label: "Planejamento", icon: Target },
+  { path: "/planning?tab=projections", label: "Planejamento", icon: Target },
   { path: "/categories", label: "Categorias", icon: Tags },
   { path: "/settings", label: "Configurações", icon: Settings },
 ];
