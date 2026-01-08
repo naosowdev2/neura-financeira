@@ -222,6 +222,7 @@ export default function Dashboard() {
               initialBalance={data?.initialMonthBalance || 0}
               currentBalance={data?.currentBalance || 0}
               projectedBalance={data?.projectedBalance || 0}
+              totalSavingsGoals={data?.totalSavingsGoals || 0}
               pendingExpenses={pendingExpenses}
               pendingIncome={pendingIncome}
               selectedDate={selectedDate}
