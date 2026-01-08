@@ -238,21 +238,19 @@ export function useDashboard(selectedDate: Date = new Date()) {
         (creditCards || []).map(async (card) => {
           const closingDay = card.closing_day || 1;
           
-          // Get open invoices for current month
-          const { data: invoices } = await (supabase
+          // Get ALL invoices for this card to calculate current month and total committed
+          const { data: allInvoices } = await (supabase
             .from('credit_card_invoices') as any)
             .select('*')
-            .eq('credit_card_id', card.id)
-            .eq('status', 'open');
+            .eq('credit_card_id', card.id);
 
-          // Filter invoices for current month
-          const currentMonthInvoice = (invoices || []).find((inv: any) => 
-            format(parseDateOnly(inv.reference_month), 'yyyy-MM') === currentMonth
+          // Current month invoice (for display)
+          const currentMonthInvoice = (allInvoices || []).find((inv: any) => 
+            format(parseDateOnly(inv.reference_month), 'yyyy-MM') === currentMonth &&
+            inv.status === 'open'
           );
 
-          let currentInvoice = currentMonthInvoice?.total_amount ?? 0;
-
-          // Also get orphan transactions (without invoice_id) to include in the total
+          // Get ALL orphan transactions (without invoice_id)
           const { data: orphanTxns } = await supabase
             .from('transactions')
             .select('amount, date')
@@ -261,8 +259,11 @@ export function useDashboard(selectedDate: Date = new Date()) {
             .eq('type', 'expense')
             .eq('status', 'confirmed');
 
-          // Filter orphans that belong to current billing month (respecting closing_day)
-          const orphanTotal = (orphanTxns || [])
+          // Current month invoice amount (for display)
+          let currentInvoice = currentMonthInvoice?.total_amount ?? 0;
+          
+          // Add orphans that belong to current billing month (respecting closing_day)
+          const orphanCurrentMonth = (orphanTxns || [])
             .filter((t: any) => {
               const txnDate = parseDateOnly(t.date);
               const billingMonth = getBillingMonthForCard(txnDate, closingDay);
@@ -270,12 +271,24 @@ export function useDashboard(selectedDate: Date = new Date()) {
             })
             .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
 
-          currentInvoice += orphanTotal;
+          currentInvoice += orphanCurrentMonth;
+
+          // TOTAL COMMITTED = all unpaid invoices + all orphan transactions
+          // This reflects the REAL credit limit usage
+          const unpaidInvoicesTotal = (allInvoices || [])
+            .filter((inv: any) => inv.status !== 'paid')
+            .reduce((sum: number, inv: any) => sum + Number(inv.total_amount || 0), 0);
+          
+          const allOrphansTotal = (orphanTxns || [])
+            .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
+
+          const totalCommitted = unpaidInvoicesTotal + allOrphansTotal;
 
           return {
             ...card,
             current_invoice: currentInvoice,
-            available_limit: Number(card.credit_limit) - currentInvoice,
+            total_committed: totalCommitted,
+            available_limit: Number(card.credit_limit) - totalCommitted,
           };
         })
       );

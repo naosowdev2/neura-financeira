@@ -12,6 +12,7 @@ interface CreditCardData {
   name: string;
   credit_limit: number;
   current_invoice: number;
+  total_committed?: number;
   available_limit: number;
   color: string;
   due_day: number;
@@ -52,7 +53,11 @@ export function CreditCardsList({ creditCards }: Props) {
             </p>
           ) : (
             creditCards.map((card) => {
-              const usagePercent = (card.current_invoice / card.credit_limit) * 100;
+              // Use total_committed for usage percent if available, otherwise fall back to current_invoice
+              const committedAmount = card.total_committed ?? card.current_invoice;
+              const usagePercent = card.credit_limit > 0 
+                ? (committedAmount / card.credit_limit) * 100 
+                : 0;
               return (
                 <div key={card.id} className="space-y-3 group p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-200">
                   <div className="flex items-center justify-between">
