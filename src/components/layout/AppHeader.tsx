@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, FileText, Target, Tags, Settings, LayoutDashboard, Wallet, Clock } from "lucide-react";
+import { LogOut, FileText, Target, Tags, Settings, LayoutDashboard, Landmark, Clock } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { RippleButton } from "@/components/ui/ripple-button";
@@ -18,7 +18,7 @@ const navItems = [{
 }, {
   path: "/accounts",
   label: "Contas",
-  icon: Wallet
+  icon: Landmark
 }, {
   path: "/reports",
   label: "Relatórios",
