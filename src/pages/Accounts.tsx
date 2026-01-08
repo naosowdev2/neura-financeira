@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { format, startOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Wallet, CreditCard, Plus, Pencil, History, Scale } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -19,6 +21,7 @@ import { InstitutionLogo } from '@/components/ui/InstitutionLogo';
 import { InvoiceDetailSheet } from '@/components/invoices/InvoiceDetailSheet';
 import { AccountHistorySheet } from '@/components/accounts/AccountHistorySheet';
 import { BalanceAdjustmentDialog } from '@/components/forms/BalanceAdjustmentDialog';
+import { MonthNavigator } from '@/components/dashboard/MonthNavigator';
 import type { CreditCard as CreditCardType } from '@/types/financial';
 
 const formatCurrency = (value: number) => {
@@ -47,6 +50,7 @@ export default function Accounts() {
   const [historySheetOpen, setHistorySheetOpen] = useState(false);
   const [adjustmentAccount, setAdjustmentAccount] = useState<any>(null);
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const { creditCards, isLoading: cardsLoading } = useCreditCards();
@@ -62,21 +66,41 @@ export default function Accounts() {
   const totalAccounts = accounts.reduce((sum, acc) => sum + (acc.calculated_balance ?? acc.current_balance ?? 0), 0);
   const activeAccountsCount = accounts.length;
 
-  const getCardCurrentInvoice = (cardId: string) => {
-    // Get invoice totals
-    const cardInvoices = invoices.filter(inv => inv.credit_card_id === cardId && inv.status === 'open');
-    const fromInvoices = cardInvoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
-    
-    // Also include orphan transactions (without invoice_id)
-    const orphanTxns = transactions.filter(
-      t => t.credit_card_id === cardId && !t.invoice_id && t.type === 'expense' && t.status === 'confirmed'
-    );
-    const orphanTotal = orphanTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-    
-    return fromInvoices + orphanTotal;
-  };
+  // Get invoice amount for a card in the selected month
+  const getCardCurrentInvoice = useMemo(() => {
+    return (cardId: string) => {
+      const selectedMonth = format(selectedDate, 'yyyy-MM');
+      
+      // Get invoice totals for the selected month
+      const cardInvoices = invoices.filter(inv => {
+        const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
+        return inv.credit_card_id === cardId && 
+               inv.status === 'open' && 
+               invoiceMonth === selectedMonth;
+      });
+      const fromInvoices = cardInvoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+      
+      // Also include orphan transactions for this month (without invoice_id)
+      const monthStart = startOfMonth(selectedDate);
+      const orphanTxns = transactions.filter(t => {
+        if (t.credit_card_id !== cardId || t.invoice_id || t.type !== 'expense' || t.status !== 'confirmed') {
+          return false;
+        }
+        const txnDate = new Date(t.date);
+        const txnMonth = format(txnDate, 'yyyy-MM');
+        return txnMonth === selectedMonth;
+      });
+      const orphanTotal = orphanTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      
+      return fromInvoices + orphanTotal;
+    };
+  }, [invoices, transactions, selectedDate]);
 
-  const totalInvoices = creditCards.reduce((sum, card) => sum + getCardCurrentInvoice(card.id), 0);
+  // Calculate totals based on selected month
+  const totalInvoices = useMemo(() => {
+    return creditCards.reduce((sum, card) => sum + getCardCurrentInvoice(card.id), 0);
+  }, [creditCards, getCardCurrentInvoice]);
+  
   const totalLimit = creditCards.reduce((sum, card) => sum + (card.credit_limit || 0), 0);
   const availableLimit = totalLimit - totalInvoices;
 
@@ -209,12 +233,20 @@ export default function Accounts() {
         </TabsContent>
 
         <TabsContent value="cards" className="mt-6 space-y-6">
+          {/* Month Navigator */}
+          <MonthNavigator 
+            selectedDate={selectedDate} 
+            onDateChange={setSelectedDate} 
+          />
+
           {/* Resumo de Cartões */}
           <Card className="bg-gradient-to-r from-pink-500/10 to-pink-600/5 border-pink-500/20">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total de Faturas</p>
+                  <p className="text-sm text-muted-foreground">
+                    Faturas de {format(selectedDate, "MMMM/yyyy", { locale: ptBR })}
+                  </p>
                   <p className="text-2xl font-bold text-destructive">
                     {formatCurrency(totalInvoices)}
                   </p>
@@ -273,7 +305,9 @@ export default function Accounts() {
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-xs text-muted-foreground">Fatura Atual</p>
+                          <p className="text-xs text-muted-foreground">
+                            Fatura {format(selectedDate, "MMM/yy", { locale: ptBR })}
+                          </p>
                           <p className="text-lg font-bold text-destructive">
                             {formatCurrency(currentInvoice)}
                           </p>
