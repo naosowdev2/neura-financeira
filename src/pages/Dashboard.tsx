@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { parseDateOnly } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -140,7 +141,7 @@ export default function Dashboard() {
     const selectedMonth = format(selectedDate, 'yyyy-MM');
     return invoices
       .filter(inv => {
-        const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
+        const invoiceMonth = format(parseDateOnly(inv.reference_month), 'yyyy-MM');
         return inv.status === 'open' && invoiceMonth === selectedMonth;
       })
       .reduce((sum, inv) => sum + (inv.total_amount || 0), 0);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
-import { getBillingMonth } from '@/lib/utils';
+import { getBillingMonth, parseDateOnly } from '@/lib/utils';
 import { ptBR } from 'date-fns/locale';
 import { Wallet, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -83,7 +83,7 @@ export default function Accounts() {
       
       // Get invoice totals for the selected month
       const cardInvoices = invoices.filter(inv => {
-        const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
+        const invoiceMonth = format(parseDateOnly(inv.reference_month), 'yyyy-MM');
         return inv.credit_card_id === cardId && 
                inv.status === 'open' && 
                invoiceMonth === selectedMonth;
@@ -96,7 +96,7 @@ export default function Accounts() {
           return false;
         }
         // Calculate which billing month this transaction belongs to
-        const txnDate = new Date(t.date);
+        const txnDate = parseDateOnly(t.date);
         const billingMonth = getBillingMonth(txnDate, closingDay);
         const billingMonthStr = format(billingMonth, 'yyyy-MM');
         return billingMonthStr === selectedMonth;
@@ -293,7 +293,7 @@ export default function Accounts() {
                 // Get invoice status for this card and month
                 const selectedMonth = format(selectedDate, 'yyyy-MM');
                 const cardInvoice = invoices.find(inv => {
-                  const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
+                  const invoiceMonth = format(parseDateOnly(inv.reference_month), 'yyyy-MM');
                   return inv.credit_card_id === card.id && invoiceMonth === selectedMonth;
                 });
                 

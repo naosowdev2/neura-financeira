@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { parseDateOnly } from '@/lib/utils';
 import { Wallet, AlertCircle, Check, Calendar } from 'lucide-react';
 import {
   Dialog,
@@ -87,7 +88,7 @@ export function PayInvoiceDialog({
           </DialogTitle>
           <DialogDescription>
             {card?.name} - Fatura de {invoice?.reference_month ? 
-              new Date(invoice.reference_month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) 
+              parseDateOnly(invoice.reference_month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) 
               : ''}
           </DialogDescription>
         </DialogHeader>
