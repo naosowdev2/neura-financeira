@@ -30,12 +30,18 @@ interface AnnualProjectionChartProps {
 interface MonthProjection {
   month: string;
   monthKey: string;
-  projectedIncome: number;
-  projectedExpenses: number;
-  realIncome: number;
-  realExpenses: number;
-  installments: number;
+  // Receitas
+  receitasAvulsas: number;
+  recorrenciasReceita: number;
+  totalReceitas: number;
+  // Despesas
+  despesasAvulsas: number;
+  recorrenciasDespesa: number;
+  parcelamentos: number;
+  totalDespesas: number;
+  // Saldo
   projectedBalance: number;
+  isPast: boolean;
 }
 
 type ViewMode = 'q1' | 'q2' | 'q3' | 'q4' | 'semester1' | 'semester2' | 'year';
@@ -74,6 +80,7 @@ export function AnnualProjectionChart({
     const months: MonthProjection[] = [];
     const today = new Date();
     const yearStart = startOfYear(today);
+    const currentMonthKey = format(today, 'yyyy-MM');
     
     for (let i = 0; i < 12; i++) {
       const targetMonth = addMonths(yearStart, i);
@@ -81,57 +88,9 @@ export function AnnualProjectionChart({
       const monthLabel = format(targetMonth, 'MMM', { locale: ptBR });
       const monthStart = targetMonth;
       const monthEnd = addMonths(targetMonth, 1);
+      const isPastOrCurrentMonth = monthKey <= currentMonthKey;
       
-      let projectedIncome = 0;
-      let projectedExpenses = 0;
-      let installmentsTotal = 0;
-      
-      // Calculate recurrences
-      for (const recurrence of filteredRecurrences) {
-        const startDate = parseISO(recurrence.start_date);
-        const endDate = recurrence.end_date ? parseISO(recurrence.end_date) : null;
-        
-        // Check if recurrence is active during this month
-        if (isBefore(monthEnd, startDate)) continue;
-        if (endDate && isAfter(monthStart, endDate)) continue;
-        
-        // For monthly recurrences, add the full amount
-        // For other frequencies, calculate based on frequency
-        let monthlyAmount = recurrence.amount;
-        
-        if (recurrence.frequency === 'weekly') {
-          monthlyAmount = recurrence.amount * 4;
-        } else if (recurrence.frequency === 'biweekly') {
-          monthlyAmount = recurrence.amount * 2;
-        } else if (recurrence.frequency === 'yearly') {
-          // Only add if this is the anniversary month
-          const recurrenceMonth = startDate.getMonth();
-          if (targetMonth.getMonth() !== recurrenceMonth) {
-            monthlyAmount = 0;
-          }
-        } else if (recurrence.frequency === 'daily') {
-          monthlyAmount = recurrence.amount * 30;
-        }
-        
-        if (recurrence.type === 'income') {
-          projectedIncome += monthlyAmount;
-        } else {
-          projectedExpenses += monthlyAmount;
-        }
-      }
-      
-      // Calculate installments for this month
-      for (const group of filteredInstallments) {
-        const pendingTransactions = (group.transactions as any[] || [])
-          .filter((t: any) => {
-            const tDate = new Date(t.date);
-            return format(tDate, 'yyyy-MM') === monthKey && t.status === 'pending';
-          });
-        
-        installmentsTotal += pendingTransactions.length * group.installment_amount;
-      }
-      
-      // Calculate real transactions for this month (confirmed + pending)
+      // Filter transactions for this month (excluding credit card and savings goal)
       const monthTransactions = transactions.filter(t => {
         const tDate = format(parseISO(t.date), 'yyyy-MM');
         return tDate === monthKey && 
@@ -140,32 +99,98 @@ export function AnnualProjectionChart({
                !t.savings_goal_id;
       });
       
-      const realIncome = monthTransactions
-        .filter(t => t.type === 'income')
+      // ========== RECEITAS ==========
+      // Avulsas: transações sem recurrence_id e sem installment_group_id
+      const receitasAvulsas = monthTransactions
+        .filter(t => t.type === 'income' && !t.recurrence_id && !t.installment_group_id)
         .reduce((sum, t) => sum + Number(t.amount), 0);
       
-      const realExpenses = monthTransactions
-        .filter(t => t.type === 'expense')
+      // Recorrências de receita
+      let recorrenciasReceita = 0;
+      if (isPastOrCurrentMonth) {
+        // Mês passado/atual: usar transações reais com recurrence_id
+        recorrenciasReceita = monthTransactions
+          .filter(t => t.type === 'income' && t.recurrence_id !== null)
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+      } else {
+        // Mês futuro: projetar baseado em recorrências ativas sem end_date
+        for (const recurrence of filteredRecurrences) {
+          if (recurrence.type !== 'income') continue;
+          if (recurrence.end_date) continue; // Ignorar com prazo definido
+          
+          const startDate = parseISO(recurrence.start_date);
+          if (isBefore(monthEnd, startDate)) continue;
+          
+          let monthlyAmount = recurrence.amount;
+          if (recurrence.frequency === 'weekly') monthlyAmount *= 4;
+          else if (recurrence.frequency === 'biweekly') monthlyAmount *= 2;
+          else if (recurrence.frequency === 'yearly') {
+            if (targetMonth.getMonth() !== startDate.getMonth()) monthlyAmount = 0;
+          } else if (recurrence.frequency === 'daily') monthlyAmount *= 30;
+          
+          recorrenciasReceita += monthlyAmount;
+        }
+      }
+      
+      const totalReceitas = receitasAvulsas + recorrenciasReceita;
+      
+      // ========== DESPESAS ==========
+      // Avulsas: transações sem recurrence_id e sem installment_group_id
+      const despesasAvulsas = monthTransactions
+        .filter(t => t.type === 'expense' && !t.recurrence_id && !t.installment_group_id)
         .reduce((sum, t) => sum + Number(t.amount), 0);
       
-      // Combine projected (recurrences) with real transactions
-      const totalIncome = projectedIncome + realIncome;
-      const totalExpenses = projectedExpenses + realExpenses + installmentsTotal;
+      // Recorrências de despesa (fixas, sem prazo)
+      let recorrenciasDespesa = 0;
+      if (isPastOrCurrentMonth) {
+        // Mês passado/atual: usar transações reais com recurrence_id
+        recorrenciasDespesa = monthTransactions
+          .filter(t => t.type === 'expense' && t.recurrence_id !== null)
+          .reduce((sum, t) => sum + Number(t.amount), 0);
+      } else {
+        // Mês futuro: projetar baseado em recorrências ativas sem end_date
+        for (const recurrence of filteredRecurrences) {
+          if (recurrence.type !== 'expense') continue;
+          if (recurrence.end_date) continue; // Ignorar com prazo definido
+          
+          const startDate = parseISO(recurrence.start_date);
+          if (isBefore(monthEnd, startDate)) continue;
+          
+          let monthlyAmount = recurrence.amount;
+          if (recurrence.frequency === 'weekly') monthlyAmount *= 4;
+          else if (recurrence.frequency === 'biweekly') monthlyAmount *= 2;
+          else if (recurrence.frequency === 'yearly') {
+            if (targetMonth.getMonth() !== startDate.getMonth()) monthlyAmount = 0;
+          } else if (recurrence.frequency === 'daily') monthlyAmount *= 30;
+          
+          recorrenciasDespesa += monthlyAmount;
+        }
+      }
+      
+      // Parcelamentos: transações com installment_group_id
+      const parcelamentos = monthTransactions
+        .filter(t => t.type === 'expense' && t.installment_group_id !== null)
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      
+      const totalDespesas = despesasAvulsas + recorrenciasDespesa + parcelamentos;
       
       months.push({
         month: monthLabel,
         monthKey,
-        projectedIncome,
-        projectedExpenses,
-        realIncome,
-        realExpenses,
-        installments: installmentsTotal,
-        projectedBalance: totalIncome - totalExpenses
+        receitasAvulsas,
+        recorrenciasReceita,
+        totalReceitas,
+        despesasAvulsas,
+        recorrenciasDespesa,
+        parcelamentos,
+        totalDespesas,
+        projectedBalance: totalReceitas - totalDespesas,
+        isPast: isPastOrCurrentMonth
       });
     }
     
     return months;
-  }, [filteredRecurrences, filteredInstallments, transactions]);
+  }, [filteredRecurrences, transactions]);
 
   // Filter data based on view mode
   const displayData = useMemo(() => {
@@ -198,8 +223,8 @@ export function AnnualProjectionChart({
     
     return quarters.map(q => ({
       label: q.label,
-      income: q.months.reduce((sum, m) => sum + m.projectedIncome + m.realIncome, 0),
-      expenses: q.months.reduce((sum, m) => sum + m.projectedExpenses + m.realExpenses + m.installments, 0),
+      income: q.months.reduce((sum, m) => sum + m.totalReceitas, 0),
+      expenses: q.months.reduce((sum, m) => sum + m.totalDespesas, 0),
       balance: q.months.reduce((sum, m) => sum + m.projectedBalance, 0)
     }));
   }, [projectionData]);
@@ -209,8 +234,7 @@ export function AnnualProjectionChart({
 
   // Check if there's any meaningful data
   const hasData = projectionData.some(m => 
-    m.projectedIncome > 0 || m.projectedExpenses > 0 || m.installments > 0 ||
-    m.realIncome > 0 || m.realExpenses > 0
+    m.totalReceitas > 0 || m.totalDespesas > 0
   );
 
   if (!hasData) {
@@ -222,58 +246,60 @@ export function AnnualProjectionChart({
     if (!active || !payload?.length) return null;
     const data = payload[0]?.payload as MonthProjection;
     
-    const totalIncome = data.projectedIncome + data.realIncome;
-    const totalExpenses = data.projectedExpenses + data.realExpenses + data.installments;
-    
     return (
-      <div className="bg-popover/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg min-w-[220px]">
-        <p className="font-medium text-foreground capitalize mb-2">{data.month}</p>
+      <div className="bg-popover/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg min-w-[240px]">
+        <div className="flex items-center gap-2 mb-2">
+          <p className="font-medium text-foreground capitalize">{data.month}</p>
+          <span className={`text-xs px-1.5 py-0.5 rounded ${data.isPast ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+            {data.isPast ? 'Real' : 'Projetado'}
+          </span>
+        </div>
         <div className="space-y-1 text-sm">
           <div className="text-xs text-muted-foreground font-medium mb-1">Receitas</div>
-          {data.realIncome > 0 && (
+          {data.receitasAvulsas > 0 && (
             <div className="flex justify-between pl-2">
-              <span className="text-success/80">Transações:</span>
-              <span className="font-medium">{formatCurrency(data.realIncome)}</span>
+              <span className="text-success/80">Avulsas:</span>
+              <span className="font-medium">{formatCurrency(data.receitasAvulsas)}</span>
             </div>
           )}
-          {data.projectedIncome > 0 && (
+          {data.recorrenciasReceita > 0 && (
             <div className="flex justify-between pl-2">
               <span className="text-success/80">Recorrências:</span>
-              <span className="font-medium">{formatCurrency(data.projectedIncome)}</span>
+              <span className="font-medium">{formatCurrency(data.recorrenciasReceita)}</span>
             </div>
           )}
           <div className="flex justify-between text-success font-medium">
             <span>Total Receitas:</span>
-            <span>{formatCurrency(totalIncome)}</span>
+            <span>{formatCurrency(data.totalReceitas)}</span>
           </div>
           
           <div className="text-xs text-muted-foreground font-medium mb-1 mt-2">Despesas</div>
-          {data.realExpenses > 0 && (
+          {data.despesasAvulsas > 0 && (
             <div className="flex justify-between pl-2">
-              <span className="text-destructive/80">Transações:</span>
-              <span className="font-medium">{formatCurrency(data.realExpenses)}</span>
+              <span className="text-destructive/80">Avulsas:</span>
+              <span className="font-medium">{formatCurrency(data.despesasAvulsas)}</span>
             </div>
           )}
-          {data.projectedExpenses > 0 && (
+          {data.recorrenciasDespesa > 0 && (
             <div className="flex justify-between pl-2">
               <span className="text-destructive/80">Recorrências:</span>
-              <span className="font-medium">{formatCurrency(data.projectedExpenses)}</span>
+              <span className="font-medium">{formatCurrency(data.recorrenciasDespesa)}</span>
             </div>
           )}
-          {data.installments > 0 && (
+          {data.parcelamentos > 0 && (
             <div className="flex justify-between pl-2">
               <span className="text-primary/80">Parcelamentos:</span>
-              <span className="font-medium">{formatCurrency(data.installments)}</span>
+              <span className="font-medium">{formatCurrency(data.parcelamentos)}</span>
             </div>
           )}
           <div className="flex justify-between text-destructive font-medium">
             <span>Total Despesas:</span>
-            <span>{formatCurrency(totalExpenses)}</span>
+            <span>{formatCurrency(data.totalDespesas)}</span>
           </div>
           
           <div className="flex justify-between pt-2 border-t border-border/50">
             <span className={data.projectedBalance >= 0 ? 'text-success' : 'text-destructive'}>
-              Saldo Projetado:
+              Saldo:
             </span>
             <span className={`font-semibold ${data.projectedBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
               {formatCurrency(data.projectedBalance)}
@@ -388,7 +414,7 @@ export function AnnualProjectionChart({
               
               <Area 
                 type="monotone"
-                dataKey="projectedIncome" 
+                dataKey="totalReceitas" 
                 name="Receitas"
                 stroke="hsl(var(--success))" 
                 strokeWidth={2}
@@ -396,15 +422,15 @@ export function AnnualProjectionChart({
               />
               <Area 
                 type="monotone"
-                dataKey="projectedExpenses" 
-                name="Despesas Fixas"
+                dataKey="recorrenciasDespesa" 
+                name="Desp. Recorrentes"
                 stroke="hsl(var(--destructive))" 
                 strokeWidth={2}
                 fill="url(#colorExpenses)"
               />
               <Area 
                 type="monotone"
-                dataKey="installments" 
+                dataKey="parcelamentos" 
                 name="Parcelamentos"
                 stroke="hsl(var(--primary))" 
                 strokeWidth={2}
@@ -413,7 +439,7 @@ export function AnnualProjectionChart({
               <Line 
                 type="monotone"
                 dataKey="projectedBalance" 
-                name="Saldo Projetado"
+                name="Saldo"
                 stroke="hsl(var(--foreground))" 
                 strokeWidth={2}
                 strokeDasharray="5 5"
