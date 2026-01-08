@@ -48,11 +48,29 @@ export default function Settings() {
     }
   };
 
-  const handleUpdateServiceWorker = () => {
-    updateServiceWorker();
-    toast.success("Verificando atualizações...", {
-      description: "O app será atualizado se houver nova versão disponível."
-    });
+  const handleUpdateServiceWorker = async () => {
+    try {
+      toast.loading("Atualizando aplicativo...", { id: "update" });
+      
+      // Clear all caches
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      
+      // Unregister service workers
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(r => r.unregister()));
+      
+      toast.success("Cache limpo! Recarregando...", { id: "update" });
+      
+      // Brief delay for user feedback
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Hard reload and redirect to Dashboard
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
+      toast.error("Erro ao atualizar. Tente novamente.", { id: "update" });
+    }
   };
 
   const handleClearCache = async () => {
@@ -257,9 +275,9 @@ export default function Settings() {
             {/* Botão Atualizar Service Worker */}
             <div className="flex items-center justify-between p-4 rounded-lg border">
               <div className="space-y-1">
-                <p className="font-medium">Verificar atualizações</p>
+                <p className="font-medium">Atualizar aplicativo</p>
                 <p className="text-sm text-muted-foreground">
-                  Força a verificação de novas versões do app
+                  Limpa cache e recarrega o app com a versão mais recente
                 </p>
               </div>
               <Button onClick={handleUpdateServiceWorker} size="sm">
