@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { format, startOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Wallet, CreditCard, Plus, Pencil, History, Scale } from 'lucide-react';
+import { Wallet, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import { CreditCardFormDialog } from '@/components/forms/CreditCardFormDialog';
 import { CreditCardEditDialog } from '@/components/forms/CreditCardEditDialog';
 import { InstitutionLogo } from '@/components/ui/InstitutionLogo';
 import { InvoiceDetailSheet } from '@/components/invoices/InvoiceDetailSheet';
+import { PayInvoiceDialog } from '@/components/invoices/PayInvoiceDialog';
 import { AccountHistorySheet } from '@/components/accounts/AccountHistorySheet';
 import { BalanceAdjustmentDialog } from '@/components/forms/BalanceAdjustmentDialog';
 import { MonthNavigator } from '@/components/dashboard/MonthNavigator';
@@ -52,6 +53,9 @@ export default function Accounts() {
   const [adjustmentAccount, setAdjustmentAccount] = useState<any>(null);
   const [adjustmentDialogOpen, setAdjustmentDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [payInvoiceOpen, setPayInvoiceOpen] = useState(false);
+  const [payingCard, setPayingCard] = useState<CreditCardType | null>(null);
+  const [payingInvoice, setPayingInvoice] = useState<any>(null);
 
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const { creditCards, isLoading: cardsLoading } = useCreditCards();
@@ -368,10 +372,27 @@ export default function Accounts() {
                       </div>
 
                       <div className="flex gap-2 mt-4">
+                        {/* Pay Invoice Button - only show when invoice is closed */}
+                        {cardInvoice?.status === 'closed' && currentInvoice > 0 && (
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPayingCard(card as CreditCardType);
+                              setPayingInvoice(cardInvoice);
+                              setPayInvoiceOpen(true);
+                            }}
+                          >
+                            <BanknoteIcon className="h-3 w-3 mr-1" />
+                            Pagar Fatura
+                          </Button>
+                        )}
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="flex-1"
+                          className={cardInvoice?.status === 'closed' && currentInvoice > 0 ? "" : "flex-1"}
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingCard(card);
@@ -444,6 +465,21 @@ export default function Accounts() {
           }}
         />
       )}
+
+      {/* Pay Invoice Dialog */}
+      <PayInvoiceDialog
+        open={payInvoiceOpen}
+        onOpenChange={(open) => {
+          setPayInvoiceOpen(open);
+          if (!open) {
+            setPayingCard(null);
+            setPayingInvoice(null);
+          }
+        }}
+        invoice={payingInvoice}
+        card={payingCard}
+        invoiceTotal={payingInvoice?.total_amount || 0}
+      />
       </div>
     </div>
   );
