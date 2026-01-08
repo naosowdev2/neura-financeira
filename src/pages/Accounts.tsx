@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useCreditCards } from '@/hooks/useCreditCards';
@@ -279,6 +280,30 @@ export default function Accounts() {
                   : 0;
                 const cardAvailableLimit = (card.credit_limit || 0) - currentInvoice;
 
+                // Get invoice status for this card and month
+                const selectedMonth = format(selectedDate, 'yyyy-MM');
+                const cardInvoice = invoices.find(inv => {
+                  const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
+                  return inv.credit_card_id === card.id && invoiceMonth === selectedMonth;
+                });
+                
+                const getInvoiceStatus = () => {
+                  if (!cardInvoice) {
+                    return currentInvoice > 0 
+                      ? { label: 'Aberta', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' }
+                      : { label: 'Sem fatura', color: 'bg-muted text-muted-foreground border-muted' };
+                  }
+                  if (cardInvoice.status === 'paid') {
+                    return { label: 'Paga', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' };
+                  }
+                  if (cardInvoice.status === 'closed') {
+                    return { label: 'Fechada', color: 'bg-red-500/20 text-red-400 border-red-500/30' };
+                  }
+                  return { label: 'Aberta', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
+                };
+                
+                const invoiceStatus = getInvoiceStatus();
+
                 return (
                   <Card 
                     key={card.id} 
@@ -305,9 +330,17 @@ export default function Accounts() {
                     <CardContent className="space-y-3">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-xs text-muted-foreground">
-                            Fatura {format(selectedDate, "MMM/yy", { locale: ptBR })}
-                          </p>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-xs text-muted-foreground">
+                              Fatura {format(selectedDate, "MMM/yy", { locale: ptBR })}
+                            </p>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-[10px] px-1.5 py-0 h-4 ${invoiceStatus.color}`}
+                            >
+                              {invoiceStatus.label}
+                            </Badge>
+                          </div>
                           <p className="text-lg font-bold text-destructive">
                             {formatCurrency(currentInvoice)}
                           </p>
