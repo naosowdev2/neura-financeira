@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { format, startOfMonth } from 'date-fns';
+import { format } from 'date-fns';
+import { getBillingMonth } from '@/lib/utils';
 import { ptBR } from 'date-fns/locale';
 import { Wallet, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon } from 'lucide-react';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -76,6 +77,10 @@ export default function Accounts() {
     return (cardId: string) => {
       const selectedMonth = format(selectedDate, 'yyyy-MM');
       
+      // Find the card to get its closing_day
+      const card = creditCards.find(c => c.id === cardId);
+      const closingDay = card?.closing_day || 1;
+      
       // Get invoice totals for the selected month
       const cardInvoices = invoices.filter(inv => {
         const invoiceMonth = format(new Date(inv.reference_month), 'yyyy-MM');
@@ -85,21 +90,22 @@ export default function Accounts() {
       });
       const fromInvoices = cardInvoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
       
-      // Also include orphan transactions for this month (without invoice_id)
-      const monthStart = startOfMonth(selectedDate);
+      // Also include orphan transactions that BELONG to this billing month (respecting closing_day)
       const orphanTxns = transactions.filter(t => {
         if (t.credit_card_id !== cardId || t.invoice_id || t.type !== 'expense' || t.status !== 'confirmed') {
           return false;
         }
+        // Calculate which billing month this transaction belongs to
         const txnDate = new Date(t.date);
-        const txnMonth = format(txnDate, 'yyyy-MM');
-        return txnMonth === selectedMonth;
+        const billingMonth = getBillingMonth(txnDate, closingDay);
+        const billingMonthStr = format(billingMonth, 'yyyy-MM');
+        return billingMonthStr === selectedMonth;
       });
       const orphanTotal = orphanTxns.reduce((sum, t) => sum + Number(t.amount || 0), 0);
       
       return fromInvoices + orphanTotal;
     };
-  }, [invoices, transactions, selectedDate]);
+  }, [invoices, transactions, selectedDate, creditCards]);
 
   // Calculate totals based on selected month
   const totalInvoices = useMemo(() => {

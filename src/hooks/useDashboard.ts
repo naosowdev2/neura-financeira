@@ -213,31 +213,60 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .eq('user_id', user.id)
         .eq('is_archived', false);
 
+      // Helper function to calculate billing month based on closing day
+      const getBillingMonthForCard = (transactionDate: Date, closingDay: number): Date => {
+        const day = transactionDate.getDate();
+        let billingMonth = transactionDate.getMonth();
+        let billingYear = transactionDate.getFullYear();
+        
+        if (day > closingDay) {
+          billingMonth++;
+          if (billingMonth > 11) {
+            billingMonth = 0;
+            billingYear++;
+          }
+        }
+        
+        return new Date(billingYear, billingMonth, 1);
+      };
+
+      const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM');
+
       const cardsWithInvoice = await Promise.all(
         (creditCards || []).map(async (card) => {
-          // Get open invoices
+          const closingDay = card.closing_day || 1;
+          
+          // Get open invoices for current month
           const { data: invoices } = await (supabase
             .from('credit_card_invoices') as any)
             .select('*')
             .eq('credit_card_id', card.id)
-            .eq('status', 'open')
-            .order('reference_month', { ascending: false })
-            .limit(1);
+            .eq('status', 'open');
 
-          let currentInvoice = invoices?.[0]?.total_amount ?? 0;
+          // Filter invoices for current month
+          const currentMonthInvoice = (invoices || []).find((inv: any) => 
+            format(new Date(inv.reference_month), 'yyyy-MM') === currentMonth
+          );
+
+          let currentInvoice = currentMonthInvoice?.total_amount ?? 0;
 
           // Also get orphan transactions (without invoice_id) to include in the total
           const { data: orphanTxns } = await supabase
             .from('transactions')
-            .select('amount')
+            .select('amount, date')
             .eq('credit_card_id', card.id)
             .is('invoice_id', null)
             .eq('type', 'expense')
             .eq('status', 'confirmed');
 
-          const orphanTotal = (orphanTxns || []).reduce(
-            (sum, t) => sum + Number(t.amount || 0), 0
-          );
+          // Filter orphans that belong to current billing month (respecting closing_day)
+          const orphanTotal = (orphanTxns || [])
+            .filter((t: any) => {
+              const txnDate = new Date(t.date);
+              const billingMonth = getBillingMonthForCard(txnDate, closingDay);
+              return format(billingMonth, 'yyyy-MM') === currentMonth;
+            })
+            .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
 
           currentInvoice += orphanTotal;
 

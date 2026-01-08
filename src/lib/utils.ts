@@ -24,3 +24,24 @@ export function formatDateOnly(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * Calculate the billing month for a credit card transaction based on the closing day.
+ * If the transaction date is after the closing day, it goes to the next month's invoice.
+ */
+export function getBillingMonth(transactionDate: Date, closingDay: number): Date {
+  const day = transactionDate.getDate();
+  let billingMonth = transactionDate.getMonth();
+  let billingYear = transactionDate.getFullYear();
+  
+  // If transaction was after closing day, it goes to next month's invoice
+  if (day > closingDay) {
+    billingMonth++;
+    if (billingMonth > 11) {
+      billingMonth = 0;
+      billingYear++;
+    }
+  }
+  
+  return new Date(billingYear, billingMonth, 1);
+}
