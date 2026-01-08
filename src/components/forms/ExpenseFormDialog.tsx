@@ -181,6 +181,23 @@ export function ExpenseFormDialog({ trigger }: Props) {
     };
   }, [amount, totalInstallments, startingInstallment, amountType, firstInstallmentDate, installmentFrequency]);
 
+  // Generate list of all installments for preview
+  const installmentsList = useMemo(() => {
+    if (!isInstallment || amount <= 0) return [];
+    
+    const { installmentAmount, installmentsToCreate, startNum, firstDate } = installmentCalculation;
+    
+    return Array.from({ length: installmentsToCreate }, (_, index) => {
+      const installmentDate = addIntervalByFrequency(firstDate, installmentFrequency, index);
+      return {
+        number: startNum + index,
+        date: installmentDate,
+        amount: installmentAmount,
+        month: format(installmentDate, "MMM/yy", { locale: ptBR }),
+        fullDate: format(installmentDate, "dd/MM/yyyy", { locale: ptBR }),
+      };
+    });
+  }, [isInstallment, amount, installmentCalculation, installmentFrequency]);
 
   // Auto-categorization with AI
   useEffect(() => {
@@ -562,6 +579,33 @@ export function ExpenseFormDialog({ trigger }: Props) {
                             {format(installmentCalculation.firstDate, "dd/MM/yyyy", { locale: ptBR })} até{' '}
                             {format(installmentCalculation.lastDate, "dd/MM/yyyy", { locale: ptBR })}
                           </p>
+                          
+                          {/* Lista de Todas as Parcelas */}
+                          {installmentsList.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-primary/20">
+                              <p className="text-xs text-muted-foreground mb-2">Parcelas que serão criadas:</p>
+                              <div className="max-h-32 overflow-y-auto space-y-1">
+                                {installmentsList.map((inst) => (
+                                  <div 
+                                    key={inst.number} 
+                                    className="flex items-center justify-between text-xs bg-secondary/50 rounded px-2 py-1.5"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium text-primary w-6">
+                                        {inst.number}ª
+                                      </span>
+                                      <span className="text-muted-foreground capitalize">
+                                        {inst.month}
+                                      </span>
+                                    </div>
+                                    <span className="font-medium">
+                                      R$ {inst.amount.toFixed(2)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
