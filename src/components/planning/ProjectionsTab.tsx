@@ -129,11 +129,9 @@ export function ProjectionsTab() {
   return (
     <div className="space-y-6">
       {/* Header with description */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Projeções</h2>
-          <p className="text-muted-foreground">Visualize o saldo previsto mês a mês</p>
-        </div>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">Projeções</h2>
+        <p className="text-muted-foreground">Visualize o saldo previsto mês a mês</p>
       </div>
 
       {/* Month Navigator */}
