@@ -94,41 +94,6 @@ export function ExpenseFormDialog({ trigger }: Props) {
     [categories]
   );
 
-  // Calculate installment values
-  const installmentCalculation = useMemo(() => {
-    const inputAmount = amount || 0;
-    const totalOfPurchase = parseInt(totalInstallments) || 2;  // Total de parcelas DA COMPRA
-    const startNum = parseInt(startingInstallment) || 1;
-    
-    // Quantas parcelas vamos CRIAR (da startNum até totalOfPurchase)
-    const installmentsToCreate = Math.max(1, totalOfPurchase - startNum + 1);
-    
-    let totalAmount: number;
-    let installmentAmount: number;
-    
-    if (amountType === 'total') {
-      totalAmount = inputAmount;
-      installmentAmount = inputAmount / installmentsToCreate;
-    } else {
-      installmentAmount = inputAmount;
-      totalAmount = inputAmount * installmentsToCreate;
-    }
-    
-    const firstDate = new Date(date);
-    const lastDate = addIntervalByFrequency(firstDate, installmentFrequency, installmentsToCreate - 1);
-    
-    return {
-      totalAmount,
-      installmentAmount,
-      installmentsToCreate,      // Parcelas que serão criadas
-      totalOfPurchase,           // Total da compra original
-      startNum,
-      endNum: totalOfPurchase,   // Última parcela = total da compra
-      firstDate,
-      lastDate,
-    };
-  }, [amount, totalInstallments, startingInstallment, amountType, date, installmentFrequency]);
-
   // Calculate which invoice this purchase will fall into (for credit card)
   const invoiceInfo = useMemo(() => {
     if (paymentMethod !== 'credit_card' || !creditCardId) return null;
@@ -170,6 +135,53 @@ export function ExpenseFormDialog({ trigger }: Props) {
     };
   }, [paymentMethod, creditCardId, creditCards, date]);
 
+  // Calculate the first installment date based on payment method
+  const firstInstallmentDate = useMemo(() => {
+    // Para cartão de crédito, usar a data de referência da fatura
+    if (paymentMethod === 'credit_card' && invoiceInfo) {
+      return format(invoiceInfo.invoiceDate, 'yyyy-MM-dd');
+    }
+    // Para conta/carteira, usar a data da compra
+    return date;
+  }, [paymentMethod, invoiceInfo, date]);
+
+  // Calculate installment values
+  const installmentCalculation = useMemo(() => {
+    const inputAmount = amount || 0;
+    const totalOfPurchase = parseInt(totalInstallments) || 2;  // Total de parcelas DA COMPRA
+    const startNum = parseInt(startingInstallment) || 1;
+    
+    // Quantas parcelas vamos CRIAR (da startNum até totalOfPurchase)
+    const installmentsToCreate = Math.max(1, totalOfPurchase - startNum + 1);
+    
+    let totalAmount: number;
+    let installmentAmount: number;
+    
+    if (amountType === 'total') {
+      totalAmount = inputAmount;
+      installmentAmount = inputAmount / installmentsToCreate;
+    } else {
+      installmentAmount = inputAmount;
+      totalAmount = inputAmount * installmentsToCreate;
+    }
+    
+    // Usar firstInstallmentDate que já considera a fatura do cartão
+    const firstDate = new Date(firstInstallmentDate + 'T12:00:00');
+    const lastDate = addIntervalByFrequency(firstDate, installmentFrequency, installmentsToCreate - 1);
+    
+    return {
+      totalAmount,
+      installmentAmount,
+      installmentsToCreate,      // Parcelas que serão criadas
+      totalOfPurchase,           // Total da compra original
+      startNum,
+      endNum: totalOfPurchase,   // Última parcela = total da compra
+      firstDate,
+      lastDate,
+    };
+  }, [amount, totalInstallments, startingInstallment, amountType, firstInstallmentDate, installmentFrequency]);
+
+
   // Auto-categorization with AI
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
@@ -208,7 +220,7 @@ export function ExpenseFormDialog({ trigger }: Props) {
         total_installments: parseInt(totalInstallments) || 2,
         starting_installment: parseInt(startingInstallment) || 1,
         frequency: installmentFrequency,
-        first_installment_date: date,
+        first_installment_date: firstInstallmentDate,
         category_id: categoryId || undefined,
         account_id: paymentMethod === 'account' ? (accountId || undefined) : undefined,
         credit_card_id: paymentMethod === 'credit_card' ? (creditCardId || undefined) : undefined,
