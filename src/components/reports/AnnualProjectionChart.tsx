@@ -24,6 +24,7 @@ interface AnnualProjectionChartProps {
   installmentGroups: InstallmentGroup[];
   accounts: { id: string; name: string }[];
   creditCards: { id: string; name: string }[];
+  transactions?: any[];
 }
 
 interface MonthProjection {
@@ -31,17 +32,20 @@ interface MonthProjection {
   monthKey: string;
   projectedIncome: number;
   projectedExpenses: number;
+  realIncome: number;
+  realExpenses: number;
   installments: number;
   projectedBalance: number;
 }
 
-type ViewMode = 'semester1' | 'semester2' | 'year';
+type ViewMode = 'q1' | 'q2' | 'q3' | 'q4' | 'semester1' | 'semester2' | 'year';
 
 export function AnnualProjectionChart({ 
   recurrences, 
   installmentGroups, 
   accounts, 
-  creditCards 
+  creditCards,
+  transactions = []
 }: AnnualProjectionChartProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('year');
   const [selectedAccount, setSelectedAccount] = useState<string>('all');
@@ -127,22 +131,53 @@ export function AnnualProjectionChart({
         installmentsTotal += pendingTransactions.length * group.installment_amount;
       }
       
+      // Calculate real transactions for this month (confirmed + pending)
+      const monthTransactions = transactions.filter(t => {
+        const tDate = format(parseISO(t.date), 'yyyy-MM');
+        return tDate === monthKey && 
+               (t.status === 'confirmed' || t.status === 'pending') &&
+               !t.credit_card_id && 
+               !t.savings_goal_id;
+      });
+      
+      const realIncome = monthTransactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      
+      const realExpenses = monthTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      
+      // Combine projected (recurrences) with real transactions
+      const totalIncome = projectedIncome + realIncome;
+      const totalExpenses = projectedExpenses + realExpenses + installmentsTotal;
+      
       months.push({
         month: monthLabel,
         monthKey,
         projectedIncome,
         projectedExpenses,
+        realIncome,
+        realExpenses,
         installments: installmentsTotal,
-        projectedBalance: projectedIncome - projectedExpenses - installmentsTotal
+        projectedBalance: totalIncome - totalExpenses
       });
     }
     
     return months;
-  }, [filteredRecurrences, filteredInstallments]);
+  }, [filteredRecurrences, filteredInstallments, transactions]);
 
   // Filter data based on view mode
   const displayData = useMemo(() => {
     switch (viewMode) {
+      case 'q1':
+        return projectionData.slice(0, 3);
+      case 'q2':
+        return projectionData.slice(3, 6);
+      case 'q3':
+        return projectionData.slice(6, 9);
+      case 'q4':
+        return projectionData.slice(9, 12);
       case 'semester1':
         return projectionData.slice(0, 6);
       case 'semester2':
@@ -155,16 +190,16 @@ export function AnnualProjectionChart({
   // Calculate quarterly summaries
   const quarterSummaries = useMemo(() => {
     const quarters = [
-      { label: 'Q1 (Jan-Mar)', months: projectionData.slice(0, 3) },
-      { label: 'Q2 (Abr-Jun)', months: projectionData.slice(3, 6) },
-      { label: 'Q3 (Jul-Set)', months: projectionData.slice(6, 9) },
-      { label: 'Q4 (Out-Dez)', months: projectionData.slice(9, 12) },
+      { label: '1º Trimestre (Jan-Mar)', months: projectionData.slice(0, 3) },
+      { label: '2º Trimestre (Abr-Jun)', months: projectionData.slice(3, 6) },
+      { label: '3º Trimestre (Jul-Set)', months: projectionData.slice(6, 9) },
+      { label: '4º Trimestre (Out-Dez)', months: projectionData.slice(9, 12) },
     ];
     
     return quarters.map(q => ({
       label: q.label,
-      income: q.months.reduce((sum, m) => sum + m.projectedIncome, 0),
-      expenses: q.months.reduce((sum, m) => sum + m.projectedExpenses + m.installments, 0),
+      income: q.months.reduce((sum, m) => sum + m.projectedIncome + m.realIncome, 0),
+      expenses: q.months.reduce((sum, m) => sum + m.projectedExpenses + m.realExpenses + m.installments, 0),
       balance: q.months.reduce((sum, m) => sum + m.projectedBalance, 0)
     }));
   }, [projectionData]);
@@ -174,7 +209,8 @@ export function AnnualProjectionChart({
 
   // Check if there's any meaningful data
   const hasData = projectionData.some(m => 
-    m.projectedIncome > 0 || m.projectedExpenses > 0 || m.installments > 0
+    m.projectedIncome > 0 || m.projectedExpenses > 0 || m.installments > 0 ||
+    m.realIncome > 0 || m.realExpenses > 0
   );
 
   if (!hasData) {
@@ -186,25 +222,58 @@ export function AnnualProjectionChart({
     if (!active || !payload?.length) return null;
     const data = payload[0]?.payload as MonthProjection;
     
+    const totalIncome = data.projectedIncome + data.realIncome;
+    const totalExpenses = data.projectedExpenses + data.realExpenses + data.installments;
+    
     return (
-      <div className="bg-popover/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg min-w-[200px]">
+      <div className="bg-popover/95 backdrop-blur-sm p-3 rounded-lg border shadow-lg min-w-[220px]">
         <p className="font-medium text-foreground capitalize mb-2">{data.month}</p>
         <div className="space-y-1 text-sm">
-          <div className="flex justify-between">
-            <span className="text-success">Receitas:</span>
-            <span className="font-medium">{formatCurrency(data.projectedIncome)}</span>
+          <div className="text-xs text-muted-foreground font-medium mb-1">Receitas</div>
+          {data.realIncome > 0 && (
+            <div className="flex justify-between pl-2">
+              <span className="text-success/80">Transações:</span>
+              <span className="font-medium">{formatCurrency(data.realIncome)}</span>
+            </div>
+          )}
+          {data.projectedIncome > 0 && (
+            <div className="flex justify-between pl-2">
+              <span className="text-success/80">Recorrências:</span>
+              <span className="font-medium">{formatCurrency(data.projectedIncome)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-success font-medium">
+            <span>Total Receitas:</span>
+            <span>{formatCurrency(totalIncome)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-destructive">Despesas Fixas:</span>
-            <span className="font-medium">{formatCurrency(data.projectedExpenses)}</span>
+          
+          <div className="text-xs text-muted-foreground font-medium mb-1 mt-2">Despesas</div>
+          {data.realExpenses > 0 && (
+            <div className="flex justify-between pl-2">
+              <span className="text-destructive/80">Transações:</span>
+              <span className="font-medium">{formatCurrency(data.realExpenses)}</span>
+            </div>
+          )}
+          {data.projectedExpenses > 0 && (
+            <div className="flex justify-between pl-2">
+              <span className="text-destructive/80">Recorrências:</span>
+              <span className="font-medium">{formatCurrency(data.projectedExpenses)}</span>
+            </div>
+          )}
+          {data.installments > 0 && (
+            <div className="flex justify-between pl-2">
+              <span className="text-primary/80">Parcelamentos:</span>
+              <span className="font-medium">{formatCurrency(data.installments)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-destructive font-medium">
+            <span>Total Despesas:</span>
+            <span>{formatCurrency(totalExpenses)}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-primary">Parcelamentos:</span>
-            <span className="font-medium">{formatCurrency(data.installments)}</span>
-          </div>
-          <div className="flex justify-between pt-1 border-t border-border/50">
+          
+          <div className="flex justify-between pt-2 border-t border-border/50">
             <span className={data.projectedBalance >= 0 ? 'text-success' : 'text-destructive'}>
-              Saldo:
+              Saldo Projetado:
             </span>
             <span className={`font-semibold ${data.projectedBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
               {formatCurrency(data.projectedBalance)}
@@ -265,8 +334,12 @@ export function AnnualProjectionChart({
             
             <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
               <TabsList className="h-8">
-                <TabsTrigger value="semester1" className="text-xs px-2 h-6">S1</TabsTrigger>
-                <TabsTrigger value="semester2" className="text-xs px-2 h-6">S2</TabsTrigger>
+                <TabsTrigger value="q1" className="text-xs px-2 h-6">1º Tri</TabsTrigger>
+                <TabsTrigger value="q2" className="text-xs px-2 h-6">2º Tri</TabsTrigger>
+                <TabsTrigger value="q3" className="text-xs px-2 h-6">3º Tri</TabsTrigger>
+                <TabsTrigger value="q4" className="text-xs px-2 h-6">4º Tri</TabsTrigger>
+                <TabsTrigger value="semester1" className="text-xs px-2 h-6">1º Sem</TabsTrigger>
+                <TabsTrigger value="semester2" className="text-xs px-2 h-6">2º Sem</TabsTrigger>
                 <TabsTrigger value="year" className="text-xs px-2 h-6">Ano</TabsTrigger>
               </TabsList>
             </Tabs>
