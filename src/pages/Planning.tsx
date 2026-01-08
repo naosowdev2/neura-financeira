@@ -256,28 +256,49 @@ export default function Planning() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="flex w-full max-w-3xl overflow-x-auto h-auto">
-            <TabsTrigger value="projections" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
-              <Scale className="h-4 w-4" />
-              <span>Projeções</span>
-            </TabsTrigger>
-            <TabsTrigger value="budgets" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
-              <Wallet className="h-4 w-4" />
-              <span>Orçamentos</span>
-            </TabsTrigger>
-            <TabsTrigger value="savings" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
-              <PiggyBank className="h-4 w-4" />
-              <span>Cofrinhos</span>
-            </TabsTrigger>
-            <TabsTrigger value="recurrences" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
-              <RefreshCcw className="h-4 w-4" />
-              <span>Recorrências</span>
-            </TabsTrigger>
-            <TabsTrigger value="installments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-3">
-              <Layers className="h-4 w-4" />
-              <span>Parcelas</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="relative">
+            {/* Fade indicators for scroll */}
+            <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10 md:hidden" />
+            <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10 md:hidden" />
+            
+            <TabsList className="flex w-full max-w-3xl overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory h-auto p-1 gap-1">
+              <TabsTrigger 
+                value="projections" 
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 px-3 sm:px-4 snap-start flex-shrink-0 data-[state=active]:shadow-[0_0_12px_-3px_hsl(var(--primary)/0.5)] transition-all duration-200"
+              >
+                <Scale className="h-4 w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Projeções</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="budgets" 
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 px-3 sm:px-4 snap-start flex-shrink-0 data-[state=active]:shadow-[0_0_12px_-3px_hsl(var(--primary)/0.5)] transition-all duration-200"
+              >
+                <Wallet className="h-4 w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Orçamentos</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="savings" 
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 px-3 sm:px-4 snap-start flex-shrink-0 data-[state=active]:shadow-[0_0_12px_-3px_hsl(var(--primary)/0.5)] transition-all duration-200"
+              >
+                <PiggyBank className="h-4 w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Cofrinhos</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="recurrences" 
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 px-3 sm:px-4 snap-start flex-shrink-0 data-[state=active]:shadow-[0_0_12px_-3px_hsl(var(--primary)/0.5)] transition-all duration-200"
+              >
+                <RefreshCcw className="h-4 w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Recorrências</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="installments" 
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 px-3 sm:px-4 snap-start flex-shrink-0 data-[state=active]:shadow-[0_0_12px_-3px_hsl(var(--primary)/0.5)] transition-all duration-200"
+              >
+                <Layers className="h-4 w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap">Parcelas</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Projeções Tab */}
           <TabsContent value="projections" className="space-y-6">
