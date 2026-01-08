@@ -418,9 +418,19 @@ export default function Reports() {
                     <div className="p-3 rounded-full bg-success/10">
                       <TrendingUp className="h-6 w-6 text-success" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm text-muted-foreground">Receitas</p>
                       <p className="text-2xl font-bold text-success">{formatCurrency(totals.income)}</p>
+                      <div className="text-xs mt-1 space-y-0.5">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground">Efetivadas:</span>
+                          <span className="text-success">{formatCurrency(totals.income - totals.pendingIncome)}</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground">Pendentes:</span>
+                          <span className="text-success/70">{formatCurrency(totals.pendingIncome)}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -432,9 +442,19 @@ export default function Reports() {
                     <div className="p-3 rounded-full bg-destructive/10">
                       <TrendingDown className="h-6 w-6 text-destructive" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm text-muted-foreground">Despesas</p>
                       <p className="text-2xl font-bold text-destructive">{formatCurrency(totals.expenses)}</p>
+                      <div className="text-xs mt-1 space-y-0.5">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground">Efetivadas:</span>
+                          <span className="text-destructive">{formatCurrency(totals.expenses - totals.pendingExpenses)}</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground">Pendentes:</span>
+                          <span className="text-destructive/70">{formatCurrency(totals.pendingExpenses)}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -446,14 +466,21 @@ export default function Reports() {
                     <div className="p-3 rounded-full bg-primary/10">
                       <BarChart3 className="h-6 w-6 text-primary" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm text-muted-foreground">Resultado do mês</p>
                       <p className={`text-2xl font-bold ${totals.balance >= 0 ? 'text-success' : 'text-destructive'}`}>
                         {formatCurrency(totals.balance)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Receitas - Despesas
-                      </p>
+                      <div className="text-xs mt-1 space-y-0.5">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground">Receitas:</span>
+                          <span className="text-success">+{formatCurrency(totals.income)}</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-muted-foreground">Despesas:</span>
+                          <span className="text-destructive">-{formatCurrency(totals.expenses)}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
