@@ -36,7 +36,8 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState(0);
-  const [date, setDate] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [competencyDate, setCompetencyDate] = useState('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [accountId, setAccountId] = useState<string>('');
   const [creditCardId, setCreditCardId] = useState<string>('');
@@ -55,7 +56,9 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
     if (transaction) {
       setDescription(transaction.description || '');
       setAmount(transaction.amount || 0);
-      setDate(transaction.date || '');
+      // Suporte para ambos os formatos (date ou due_date)
+      setDueDate(transaction.due_date || transaction.date || '');
+      setCompetencyDate(transaction.competency_date || transaction.due_date || transaction.date || '');
       setCategoryId(transaction.category_id || '');
       setAccountId(transaction.account_id || '');
       setCreditCardId(transaction.credit_card_id || '');
@@ -81,7 +84,8 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
     const updates = {
       description,
       amount: amount || 0,
-      date,
+      due_date: dueDate,
+      competency_date: competencyDate,
       category_id: categoryId || null,
       account_id: accountId || null,
       credit_card_id: creditCardId || null,
@@ -103,7 +107,7 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
         scope,
         updates,
         recurrenceId: transaction.recurrence_id,
-        transactionDate: transaction.date,
+        transactionDate: transaction.due_date || transaction.date,
       });
     } else {
       await updateTransaction.mutateAsync({
@@ -139,7 +143,7 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
         id: transaction.id,
         scope,
         recurrenceId: transaction.recurrence_id,
-        transactionDate: transaction.date,
+        transactionDate: transaction.due_date || transaction.date,
       });
     } else {
       await deleteTransaction.mutateAsync(transaction.id);
@@ -214,14 +218,15 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-date">Data</Label>
+                <Label htmlFor="edit-due-date">Data de Vencimento</Label>
                 <Input
-                  id="edit-date"
+                  id="edit-due-date"
                   type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
                   required
                 />
+                <p className="text-xs text-muted-foreground">Quando impacta o saldo</p>
               </div>
             </div>
 
@@ -318,13 +323,13 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
       </Dialog>
 
       {/* Edit choice dialog for recurring/installment transactions */}
-      {transaction?.date && (
+      {(transaction?.due_date || transaction?.date) && (
         <RecurrenceEditChoice
           open={showEditChoice}
           onOpenChange={setShowEditChoice}
           onChoice={handleEditChoice}
           action="edit"
-          transactionDate={transaction.date}
+          transactionDate={transaction.due_date || transaction.date}
           isLoading={isLoading}
           transactionType={transactionType}
           installmentInfo={installmentInfo}
@@ -332,13 +337,13 @@ export function TransactionEditDialog({ transaction, open, onOpenChange, onSucce
       )}
 
       {/* Delete choice dialog for recurring/installment transactions */}
-      {transaction?.date && (
+      {(transaction?.due_date || transaction?.date) && (
         <RecurrenceEditChoice
           open={showDeleteChoice}
           onOpenChange={setShowDeleteChoice}
           onChoice={handleDeleteChoice}
           action="delete"
-          transactionDate={transaction.date}
+          transactionDate={transaction.due_date || transaction.date}
           isLoading={isLoading}
           transactionType={transactionType}
           installmentInfo={installmentInfo}

@@ -9,7 +9,8 @@ interface Transaction {
   description: string;
   amount: number;
   type: string;
-  date: string;
+  due_date: string;
+  competency_date: string;
   category_id: string | null;
   account_id: string | null;
   destination_account_id: string | null;
@@ -38,9 +39,9 @@ export function useAccountTransactions(accountId: string | null, month: Date) {
         .from('transactions')
         .select('*, categories(name, icon, color)')
         .or(`account_id.eq.${accountId},destination_account_id.eq.${accountId}`)
-        .gte('date', startDate)
-        .lte('date', endDate)
-        .order('date', { ascending: false });
+        .gte('due_date', startDate)
+        .lte('due_date', endDate)
+        .order('due_date', { ascending: false });
 
       if (error) throw error;
 
@@ -82,11 +83,11 @@ export function useAccountTransactions(accountId: string | null, month: Date) {
         return { ...t, isIncoming };
       });
 
-      // Agrupar por data
+      // Agrupar por data de vencimento
       const groupedMap = new Map<string, (Transaction & { isIncoming: boolean })[]>();
       
       processedTransactions.forEach((t) => {
-        const dateKey = t.date;
+        const dateKey = t.due_date;
         if (!groupedMap.has(dateKey)) {
           groupedMap.set(dateKey, []);
         }
@@ -95,9 +96,9 @@ export function useAccountTransactions(accountId: string | null, month: Date) {
 
       const grouped: GroupedTransactions[] = Array.from(groupedMap.entries())
         .sort((a, b) => b[0].localeCompare(a[0]))
-        .map(([date, txns]) => ({
-          date,
-          dateLabel: format(parseISO(date), "dd 'de' MMMM", { locale: ptBR }),
+        .map(([due_date, txns]) => ({
+          date: due_date,
+          dateLabel: format(parseISO(due_date), "dd 'de' MMMM", { locale: ptBR }),
           transactions: txns,
         }));
 

@@ -21,7 +21,7 @@ export function useTransactions() {
           destination_account:accounts!transactions_destination_account_id_fkey(*)
         `)
         .eq('user_id', user.id)
-        .order('date', { ascending: false });
+        .order('due_date', { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
@@ -38,7 +38,7 @@ export function useTransactions() {
       if (transactionData.credit_card_id && transactionData.type === 'expense' && !transactionData.invoice_id) {
         const { data: invoiceId, error: invoiceError } = await (supabase.rpc as any)('get_or_create_invoice', {
           p_credit_card_id: transactionData.credit_card_id,
-          p_transaction_date: transactionData.date,
+          p_transaction_date: transactionData.due_date,
           p_user_id: user.id,
         });
         
@@ -171,7 +171,7 @@ export function useTransactions() {
             .eq('recurrence_id', recurrenceId)
             .eq('status', 'pending')
             .eq('user_id', user.id)
-            .gt('date', transactionDate);
+            .gt('due_date', transactionDate);
           if (futureError) throw futureError;
         }
       }
@@ -232,7 +232,7 @@ export function useTransactions() {
             .eq('recurrence_id', recurrenceId)
             .eq('status', 'pending')
             .eq('user_id', user.id)
-            .gte('date', transactionDate);
+            .gte('due_date', transactionDate);
           if (deleteError) throw deleteError;
         } else {
           // No recurrence, just delete this transaction
