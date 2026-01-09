@@ -34,7 +34,7 @@ export function useInstallments() {
       
       const { data, error } = await (supabase as any)
         .from('installment_groups')
-        .select('*, category:categories(*), account:accounts(*), credit_card:credit_cards(*), transactions(id, status, installment_number, due_date, amount)')
+        .select('*, category:categories(*), account:accounts(*), credit_card:credit_cards(*), transactions(id, status, installment_number, date, amount)')
         .eq('user_id', user.id)
         .order('first_installment_date', { ascending: false });
       
@@ -112,8 +112,7 @@ export function useInstallments() {
           status: 'pending',
           amount: installmentAmount,
           description: `${input.description} (${installmentNumber}/${input.total_installments})`,  // "3/9", "4/9", etc.
-          due_date: installmentDateStr,
-          competency_date: installmentDateStr,
+          date: installmentDateStr,
           category_id: input.category_id || null,
           account_id: input.account_id || null,
           credit_card_id: input.credit_card_id || null,
@@ -177,7 +176,7 @@ export function useInstallments() {
       // Fetch current group with transactions
       const { data: currentGroup, error: fetchError } = await (supabase as any)
         .from('installment_groups')
-        .select('*, transactions(id, installment_number, status, due_date)')
+        .select('*, transactions(id, installment_number, status, date)')
         .eq('id', id)
         .eq('user_id', user.id)
         .single();
@@ -257,8 +256,7 @@ export function useInstallments() {
               status: 'pending',
               amount: newInstallmentAmount,
               description: `${description} (${i}/${newTotal})`,
-              due_date: formatDateOnly(installmentDate),
-              competency_date: formatDateOnly(installmentDate),
+              date: formatDateOnly(installmentDate),
               category_id: updates.category_id ?? currentGroup.category_id,
               account_id: updates.account_id ?? currentGroup.account_id,
               credit_card_id: updates.credit_card_id ?? currentGroup.credit_card_id,
@@ -306,7 +304,7 @@ export function useInstallments() {
             .from('transactions') as any)
             .select('id, installment_number, total_installments')
             .eq('installment_group_id', id)
-            .gte('due_date', today)
+            .gte('date', today)
             .eq('status', 'pending');
 
           if (currentTransactionsData) {
@@ -331,7 +329,7 @@ export function useInstallments() {
             .from('transactions') as any)
             .update(transactionUpdates)
             .eq('installment_group_id', id)
-            .gte('due_date', today)
+            .gte('date', today)
             .eq('status', 'pending');
 
           if (txError) throw txError;
