@@ -148,18 +148,15 @@ export function MobileNav() {
                     </RippleButton>
                   </div>
 
-                  {/* User Info */}
-                  <div className="p-4 border-b border-border">
-                    <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
-                    
-                    {/* Other months pending indicator - clickable */}
-                    {otherMonthsPending && otherMonthsPending.count > 0 && (
+                  {/* Pendências de outros meses */}
+                  {otherMonthsPending && otherMonthsPending.count > 0 && (
+                    <div className="p-4 border-b border-border">
                       <button 
                         onClick={() => {
                           handleClose();
                           setShowOtherMonthsDetails(true);
                         }}
-                        className="mt-3 w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-left"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-colors text-left"
                       >
                         <Clock className="h-4 w-4 text-amber-400" />
                         <div className="flex-1">
@@ -171,8 +168,8 @@ export function MobileNav() {
                           </p>
                         </div>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Navigation */}
                   <nav className="p-3 flex flex-col gap-1 flex-1">
@@ -200,12 +197,6 @@ export function MobileNav() {
                             >
                               <Icon className="h-5 w-5" />
                               <span className="font-medium">{item.label}</span>
-                              {isActive && (
-                                <motion.span
-                                  layoutId="mobile-nav-active"
-                                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full"
-                                />
-                              )}
                             </RippleButton>
                           </Link>
                         </motion.div>
