@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, ArrowLeftRight, Edit2, Sparkles } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowLeftRight, Edit2, Sparkles, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TransactionEditDialog } from "@/components/forms/TransactionEditDialog";
@@ -58,11 +59,16 @@ export function RecentTransactions({ transactions }: Props) {
   if (transactions.length === 0) {
     return (
       <Card className="animate-fade-in" style={{ animationDelay: '600ms' }}>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Transações Recentes</CardTitle>
+          <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+            <Link to="/reports">
+              Ver mais <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent>
-          <p className="text-white/40 text-center py-8">
+          <p className="text-muted-foreground text-center py-8">
             Nenhuma transação registrada ainda.
           </p>
         </CardContent>
@@ -73,73 +79,78 @@ export function RecentTransactions({ transactions }: Props) {
   return (
     <>
       <Card className="animate-fade-in" style={{ animationDelay: '600ms' }}>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Transações Recentes</CardTitle>
+          <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+            <Link to="/reports">
+              Ver mais <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="max-h-80 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <TooltipProvider>
             {transactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex items-start justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-200 group gap-2"
+                className="grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_auto_auto] gap-3 md:gap-4 items-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-200 group"
               >
-                <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0 overflow-hidden">
-                  <div className="p-2 rounded-xl bg-white/[0.05] mt-0.5 shrink-0">
+                {/* Col 1: Ícone + Descrição */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 rounded-xl bg-white/[0.05] shrink-0">
                     <TypeIcon type={transaction.type} />
                   </div>
-                  <div className="flex-1 min-w-0 overflow-hidden">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium truncate text-foreground text-sm sm:text-base">{transaction.description}</p>
-                      {transaction.ai_notes && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="flex-shrink-0 p-1 rounded-full bg-purple-500/20 cursor-help">
-                              <Sparkles className="h-3 w-3 text-purple-400" />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs bg-black/90 backdrop-blur-xl border-white/10">
-                            <p className="text-sm">{transaction.ai_notes}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-white/40 flex-wrap">
-                      {transaction.category && (
-                        <>
-                          <span
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: transaction.category.color }}
-                          />
-                          <span className="truncate max-w-[80px] sm:max-w-none">{transaction.category.name}</span>
-                          <span className="hidden sm:inline">•</span>
-                        </>
-                      )}
-                      <span className="flex-shrink-0">
-                        {format(new Date(transaction.date), "dd 'de' MMM", { locale: ptBR })}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium truncate text-foreground text-sm">
+                      {transaction.description}
+                    </span>
                     {transaction.ai_notes && (
-                      <p className="text-xs text-purple-400/70 mt-1 line-clamp-1 hidden sm:block">
-                        {transaction.ai_notes}
-                      </p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex-shrink-0 p-1 rounded-full bg-purple-500/20 cursor-help">
+                            <Sparkles className="h-3 w-3 text-purple-400" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs bg-black/90 backdrop-blur-xl border-white/10">
+                          <p className="text-sm">{transaction.ai_notes}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                  <div className={`font-mono font-semibold text-sm sm:text-base ${
+
+                {/* Col 2: Categoria (hidden mobile) */}
+                {transaction.category && (
+                  <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: transaction.category.color }}
+                    />
+                    <span className="truncate max-w-[120px]">{transaction.category.name}</span>
+                  </div>
+                )}
+                {!transaction.category && <div className="hidden md:block" />}
+
+                {/* Col 3: Data (hidden mobile) */}
+                <span className="hidden md:block text-sm text-muted-foreground whitespace-nowrap">
+                  {format(new Date(transaction.date), "dd MMM", { locale: ptBR })}
+                </span>
+
+                {/* Col 4: Valor + Botão Editar */}
+                <div className="flex items-center gap-2 justify-end">
+                  <span className={`font-mono font-semibold text-sm whitespace-nowrap ${
                     transaction.type === 'income' ? 'text-green-400' : 
                     transaction.type === 'expense' ? 'text-red-400' : 'text-foreground'
                   }`}>
                     {transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : ''}
                     {formatCurrency(transaction.amount)}
-                  </div>
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 sm:h-8 sm:w-8 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/[0.1]"
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/[0.1]"
                     onClick={() => handleEdit(transaction)}
                   >
-                    <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
