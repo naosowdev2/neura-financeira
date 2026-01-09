@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, ArrowLeftRight, Edit2, Sparkles, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TransactionEditDialog } from "@/components/forms/TransactionEditDialog";
@@ -50,11 +51,56 @@ const TypeIcon = ({ type }: { type: string }) => {
 export function RecentTransactions({ transactions }: Props) {
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [filterType, setFilterType] = useState<string | null>(null);
 
   const handleEdit = (transaction: any) => {
     setEditingTransaction(transaction);
     setEditOpen(true);
   };
+
+  const filteredTransactions = filterType
+    ? transactions.filter(t => t.type === filterType)
+    : transactions;
+
+  const FilterButtons = () => (
+    <div className="flex items-center gap-1">
+      <Button
+        variant={filterType === null ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => setFilterType(null)}
+        className="h-7 px-2 text-xs"
+      >
+        Todas
+      </Button>
+      <Button
+        variant={filterType === 'income' ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => setFilterType('income')}
+        className="h-7 px-2 text-xs"
+      >
+        <TrendingUp className="h-3 w-3 mr-1 text-green-400" />
+        <span className="hidden sm:inline">Receitas</span>
+      </Button>
+      <Button
+        variant={filterType === 'expense' ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => setFilterType('expense')}
+        className="h-7 px-2 text-xs"
+      >
+        <TrendingDown className="h-3 w-3 mr-1 text-red-400" />
+        <span className="hidden sm:inline">Despesas</span>
+      </Button>
+      <Button
+        variant={filterType === 'transfer' ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => setFilterType('transfer')}
+        className="h-7 px-2 text-xs"
+      >
+        <ArrowLeftRight className="h-3 w-3 mr-1 text-blue-400" />
+        <span className="hidden sm:inline">Transf.</span>
+      </Button>
+    </div>
+  );
 
   if (transactions.length === 0) {
     return (
@@ -79,19 +125,36 @@ export function RecentTransactions({ transactions }: Props) {
   return (
     <>
       <Card className="animate-fade-in" style={{ animationDelay: '600ms' }}>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Transações Recentes</CardTitle>
-          <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
-            <Link to="/reports">
-              Ver mais <ArrowRight className="h-4 w-4 ml-1" />
-            </Link>
-          </Button>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="text-lg">Transações Recentes</CardTitle>
+            <div className="flex items-center gap-2">
+              <FilterButtons />
+              <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                <Link to="/reports">
+                  Ver mais <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="max-h-80 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+          {filteredTransactions.length === 0 && filterType && (
+            <p className="text-muted-foreground text-center py-6 text-sm">
+              Nenhuma {filterType === 'income' ? 'receita' : filterType === 'expense' ? 'despesa' : 'transferência'} encontrada.
+            </p>
+          )}
           <TooltipProvider>
-            {transactions.map((transaction) => (
-              <div
+            {filteredTransactions.map((transaction, index) => (
+              <motion.div
                 key={transaction.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ 
+                  duration: 0.3, 
+                  delay: index * 0.05,
+                  ease: "easeOut"
+                }}
                 className="grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_auto_auto] gap-3 md:gap-4 items-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-200 group"
               >
                 {/* Col 1: Ícone + Descrição */}
@@ -153,7 +216,7 @@ export function RecentTransactions({ transactions }: Props) {
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </TooltipProvider>
         </CardContent>
