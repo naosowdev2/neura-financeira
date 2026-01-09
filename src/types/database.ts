@@ -71,7 +71,8 @@ export interface Transaction {
   status: TransactionStatus;
   amount: number;
   description: string;
-  date: string;
+  due_date: string;
+  competency_date: string;
   category_id: string | null;
   account_id: string | null;
   credit_card_id: string | null;
@@ -85,6 +86,10 @@ export interface Transaction {
   previous_balance: number | null;
   new_balance: number | null;
   adjustment_reason: string | null;
+  invoice_id: string | null;
+  savings_goal_id: string | null;
+  is_recurring: boolean;
+  recurrence_rule: string | null;
   created_at: string;
   updated_at: string;
   category?: Category;

@@ -57,7 +57,7 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'confirmed')
-        .lt('date', monthStart)
+        .lt('due_date', monthStart)
         .is('credit_card_id', null);
 
       const accountInitialBalances = (accounts || [])
@@ -91,8 +91,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
           .select('*')
           .eq('user_id', user.id)
           .eq('status', 'confirmed')
-          .gte('date', monthStart)
-          .lte('date', monthEnd)
+          .gte('due_date', monthStart)
+          .lte('due_date', monthEnd)
           .is('credit_card_id', null);
 
         const pastMonthMovement = (allConfirmedInMonth || []).reduce((sum, t) => {
@@ -111,8 +111,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
           .select('*')
           .eq('user_id', user.id)
           .eq('status', 'confirmed')
-          .gte('date', monthStart)
-          .lte('date', today)
+          .gte('due_date', monthStart)
+          .lte('due_date', today)
           .is('credit_card_id', null);
 
         const currentMonthMovement = (confirmedTransactionsUpToToday || []).reduce((sum, t) => {
@@ -136,8 +136,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .from('transactions')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', monthStart)
-        .lte('date', monthEnd)
+        .gte('due_date', monthStart)
+        .lte('due_date', monthEnd)
         .is('credit_card_id', null);
 
       // Excluir transações de cofrinhos dos cálculos de receita/despesa
@@ -177,9 +177,9 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .eq('user_id', user.id)
         .eq('type', 'expense')
         .eq('status', 'pending')
-        .gte('date', monthStart)
-        .lte('date', monthEnd)
-        .order('date');
+        .gte('due_date', monthStart)
+        .lte('due_date', monthEnd)
+        .order('due_date');
 
       // Pending income for current month
       const { data: pendingIncomeThisMonth } = await supabase
@@ -191,9 +191,9 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .eq('user_id', user.id)
         .eq('type', 'income')
         .eq('status', 'pending')
-        .gte('date', monthStart)
-        .lte('date', monthEnd)
-        .order('date');
+        .gte('due_date', monthStart)
+        .lte('due_date', monthEnd)
+        .order('due_date');
 
       // ALL future pending expenses (for global alert)
       const { data: allFuturePendingExpenses } = await supabase
@@ -205,8 +205,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .eq('user_id', user.id)
         .eq('type', 'expense')
         .eq('status', 'pending')
-        .gt('date', today)
-        .order('date');
+        .gt('due_date', today)
+        .order('due_date');
 
       // Fetch credit cards with current invoice from the invoices table
       const { data: creditCards } = await supabase
@@ -253,7 +253,7 @@ export function useDashboard(selectedDate: Date = new Date()) {
           // Get ALL orphan transactions (without invoice_id)
           const { data: orphanTxns } = await supabase
             .from('transactions')
-            .select('amount, date')
+            .select('amount, due_date')
             .eq('credit_card_id', card.id)
             .is('invoice_id', null)
             .eq('type', 'expense')
@@ -265,7 +265,7 @@ export function useDashboard(selectedDate: Date = new Date()) {
           // Add orphans that belong to current billing month (respecting closing_day)
           const orphanCurrentMonth = (orphanTxns || [])
             .filter((t: any) => {
-              const txnDate = parseDateOnly(t.date);
+              const txnDate = parseDateOnly(t.due_date);
               const billingMonth = getBillingMonthForCard(txnDate, closingDay);
               return format(billingMonth, 'yyyy-MM') === currentMonth;
             })
@@ -310,8 +310,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
             .eq('category_id', budget.category_id)
             .eq('type', 'expense')
             .eq('status', 'confirmed')
-            .gte('date', monthStart)
-            .lte('date', monthEnd);
+            .gte('due_date', monthStart)
+            .lte('due_date', monthEnd);
 
           const spent = (categoryTransactions || []).reduce(
             (sum, t) => sum + Number(t.amount),
@@ -348,8 +348,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
         `)
         .eq('user_id', user.id)
         .eq('status', 'pending')
-        .gte('date', today)
-        .order('date')
+        .gte('due_date', today)
+        .order('due_date')
         .limit(5);
 
       // Recent transactions for the selected month (limited for list display)
@@ -361,9 +361,9 @@ export function useDashboard(selectedDate: Date = new Date()) {
           account:accounts!transactions_account_id_fkey(*)
         `)
         .eq('user_id', user.id)
-        .gte('date', monthStart)
-        .lte('date', monthEnd)
-        .order('date', { ascending: false })
+        .gte('due_date', monthStart)
+        .lte('due_date', monthEnd)
+        .order('due_date', { ascending: false })
         .limit(10);
 
       // ALL expense transactions for chart (no limit) - including credit card expenses
@@ -375,8 +375,8 @@ export function useDashboard(selectedDate: Date = new Date()) {
         `)
         .eq('user_id', user.id)
         .eq('type', 'expense')
-        .gte('date', monthStart)
-        .lte('date', monthEnd);
+        .gte('due_date', monthStart)
+        .lte('due_date', monthEnd);
 
       return {
         accounts: accountBalances,
