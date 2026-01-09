@@ -9,6 +9,7 @@ import { User, Palette, Trash2, Moon, Sun, Monitor, Settings as SettingsIcon, Sm
 import { APP_VERSION, APP_NAME } from "@/constants/app";
 import { useTheme } from "next-themes";
 import { ClearDataDialog } from "@/components/settings/ClearDataDialog";
+import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -322,6 +323,16 @@ export default function Settings() {
                 </p>
               </div>
               <ClearDataDialog />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg border border-destructive/50 bg-destructive/10">
+              <div className="space-y-1">
+                <p className="font-medium text-destructive">Excluir conta permanentemente</p>
+                <p className="text-sm text-muted-foreground">
+                  Remove todos os dados e exclui sua conta. Esta ação é irreversível.
+                </p>
+              </div>
+              <DeleteAccountDialog />
             </div>
           </CardContent>
         </Card>
