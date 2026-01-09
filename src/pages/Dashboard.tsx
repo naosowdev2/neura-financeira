@@ -287,7 +287,7 @@ export default function Dashboard() {
               </motion.div>
             </div>
 
-            {/* Right Column - AI Alerts + Health Widget + Savings Goals + Recent Transactions */}
+            {/* Right Column - AI Alerts + Health Widget + Savings Goals */}
             <div className="space-y-6">
               <motion.div variants={itemVariants}>
                 <FinancialHealthWidget />
@@ -300,11 +300,13 @@ export default function Dashboard() {
               <motion.div variants={itemVariants}>
                 <AIAlertsWidget />
               </motion.div>
-              <motion.div variants={itemVariants}>
-                <RecentTransactions transactions={data?.recentTransactions || []} />
-              </motion.div>
             </div>
           </div>
+
+          {/* Recent Transactions - Full Width */}
+          <motion.div variants={itemVariants}>
+            <RecentTransactions transactions={data?.recentTransactions || []} />
+          </motion.div>
         </motion.div>
       </main>
 
