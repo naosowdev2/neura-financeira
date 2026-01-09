@@ -110,7 +110,7 @@ export function MobileNav() {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-[99998] bg-black/80 backdrop-blur-md md:hidden"
               onClick={handleClose}
             />
 
@@ -120,7 +120,7 @@ export function MobileNav() {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="fixed left-0 top-0 bottom-0 z-50 w-72 bg-[hsl(0,0%,4%)] border-r border-border shadow-2xl md:hidden"
+              className="fixed left-0 top-0 bottom-0 z-[99999] w-72 bg-[hsl(0,0%,4%)] border-r border-border shadow-2xl md:hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
