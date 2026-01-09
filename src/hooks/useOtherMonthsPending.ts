@@ -14,8 +14,8 @@ export function useOtherMonthsPending(selectedDate: Date = new Date()) {
       if (!user) return { count: 0, total: 0, transactions: [] };
 
       // Pending expenses OUTSIDE the selected month with full data
-      const { data, error } = await supabase
-        .from('transactions')
+      const { data, error } = await (supabase
+        .from('transactions') as any)
         .select(`
           *,
           category:categories(*)
@@ -23,14 +23,15 @@ export function useOtherMonthsPending(selectedDate: Date = new Date()) {
         .eq('user_id', user.id)
         .eq('type', 'expense')
         .eq('status', 'pending')
-        .or(`date.lt.${monthStart},date.gt.${monthEnd}`)
-        .order('date');
+        .or(`due_date.lt.${monthStart},due_date.gt.${monthEnd}`)
+        .order('due_date');
 
       if (error) throw error;
 
-      const transactions = data || [];
+      // Add date alias for backwards compatibility
+      const transactions = (data || []).map((t: any) => ({ ...t, date: t.due_date }));
       const count = transactions.length;
-      const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+      const total = transactions.reduce((sum: number, t: any) => sum + Number(t.amount), 0);
 
       return { count, total, transactions };
     },

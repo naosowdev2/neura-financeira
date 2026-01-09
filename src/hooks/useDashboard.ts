@@ -378,6 +378,10 @@ export function useDashboard(selectedDate: Date = new Date()) {
         .gte('due_date', monthStart)
         .lte('due_date', monthEnd);
 
+      // Helper function to add date alias for backwards compatibility
+      const addDateAlias = (transactions: any[]) => 
+        (transactions || []).map((t: any) => ({ ...t, date: t.due_date }));
+
       return {
         accounts: accountBalances,
         totalBalance,
@@ -393,12 +397,12 @@ export function useDashboard(selectedDate: Date = new Date()) {
         monthBalance: monthIncome - monthExpenses,
         creditCards: cardsWithInvoice,
         budgets: budgetsWithSpending,
-        upcomingTransactions: upcomingTransactions || [],
-        recentTransactions: recentTransactions || [],
-        chartTransactions: chartTransactions || [],
-        pendingExpenses: pendingExpensesThisMonth || [],
-        pendingIncome: pendingIncomeThisMonth || [],
-        futurePendingExpenses: allFuturePendingExpenses || [],
+        upcomingTransactions: addDateAlias(upcomingTransactions),
+        recentTransactions: addDateAlias(recentTransactions),
+        chartTransactions: addDateAlias(chartTransactions),
+        pendingExpenses: addDateAlias(pendingExpensesThisMonth),
+        pendingIncome: addDateAlias(pendingIncomeThisMonth),
+        futurePendingExpenses: addDateAlias(allFuturePendingExpenses),
       };
     },
     enabled: !!user,

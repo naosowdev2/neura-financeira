@@ -27,15 +27,15 @@ export function useFinancialHealth() {
       if (!user) throw new Error('No user');
 
       // Get accounts with balances
-      const { data: accounts } = await supabase
-        .from('accounts_with_balance')
+      const { data: accounts } = await (supabase
+        .from('accounts_with_balance') as any)
         .select('*')
         .eq('user_id', user.id)
         .eq('is_archived', false);
 
       const totalBalance = (accounts || [])
-        .filter(a => a.include_in_total)
-        .reduce((sum, a) => sum + (Number(a.calculated_balance) || 0), 0);
+        .filter((a: any) => a.include_in_total)
+        .reduce((sum: number, a: any) => sum + (Number(a.calculated_balance) || 0), 0);
 
       // Get credit cards
       const { data: creditCards } = await supabase
@@ -68,20 +68,20 @@ export function useFinancialHealth() {
       const threeMonthsAgo = format(startOfMonth(subMonths(now, 3)), 'yyyy-MM-dd');
       const currentMonthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
 
-      const { data: recentExpenses } = await supabase
-        .from('transactions')
-        .select('amount, date')
+      const { data: recentExpenses } = await (supabase
+        .from('transactions') as any)
+        .select('amount, due_date')
         .eq('user_id', user.id)
         .eq('type', 'expense')
-        .gte('date', threeMonthsAgo)
-        .lte('date', currentMonthEnd)
+        .gte('due_date', threeMonthsAgo)
+        .lte('due_date', currentMonthEnd)
         .is('credit_card_id', null);
 
-      const totalExpenses = (recentExpenses || []).reduce((sum, t) => sum + Number(t.amount), 0);
+      const totalExpenses = (recentExpenses || []).reduce((sum: number, t: any) => sum + Number(t.amount), 0);
       
       // Calculate actual months with data
       const monthsWithData = new Set(
-        (recentExpenses || []).map(t => format(new Date(t.date), 'yyyy-MM'))
+        (recentExpenses || []).map((t: any) => format(new Date(t.due_date), 'yyyy-MM'))
       ).size;
       
       const averageMonthlyExpenses = monthsWithData > 0 

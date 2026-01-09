@@ -95,8 +95,8 @@ export function usePushNotifications() {
     if (!user || !isSupported) return;
     
     async function checkDbSubscription() {
-      const { data } = await supabase
-        .from('push_subscriptions')
+      const { data } = await (supabase
+        .from('push_subscriptions') as any)
         .select('id, endpoint')
         .eq('user_id', user!.id)
         .eq('is_active', true)
@@ -199,8 +199,8 @@ export function usePushNotifications() {
       }
 
       // Save subscription to database
-      const { data: existing } = await supabase
-        .from('push_subscriptions')
+      const { data: existing } = await (supabase
+        .from('push_subscriptions') as any)
         .select('id')
         .eq('endpoint', subscription.endpoint)
         .limit(1);
@@ -261,8 +261,8 @@ export function usePushNotifications() {
         if (subscription) {
           await subscription.unsubscribe();
           
-          await supabase
-            .from('push_subscriptions')
+          await (supabase
+            .from('push_subscriptions') as any)
             .delete()
             .eq('endpoint', subscription.endpoint)
             .eq('user_id', user.id);

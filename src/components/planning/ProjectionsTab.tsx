@@ -362,7 +362,7 @@ function TransactionItem({ transaction, type }: TransactionItemProps) {
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          {format(new Date(transaction.date + 'T12:00:00'), "dd/MM", { locale: ptBR })}
+          {format(new Date(transaction.due_date + 'T12:00:00'), "dd/MM", { locale: ptBR })}
           {transaction.category && ` • ${transaction.category.name}`}
         </p>
       </div>

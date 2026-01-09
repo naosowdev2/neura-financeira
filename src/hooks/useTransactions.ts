@@ -23,7 +23,11 @@ export function useTransactions() {
         .eq('user_id', user.id)
         .order('due_date', { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      // Map due_date to date for backwards compatibility
+      return (data ?? []).map((t: any) => ({
+        ...t,
+        date: t.due_date, // Alias for backwards compatibility
+      }));
     },
     enabled: !!user,
   });
