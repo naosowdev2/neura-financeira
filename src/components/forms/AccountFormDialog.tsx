@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Landmark } from "lucide-react";
 import { InstitutionSelector } from "./InstitutionSelector";
 import { FinancialInstitution } from "@/constants/financial-institutions";
 import { CurrencyField } from "./CurrencyField";
@@ -95,7 +95,7 @@ export function AccountFormDialog({ trigger }: Props) {
       <DialogContent className="sm:max-w-md bg-card max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wallet className="h-5 w-5" /> Nova Conta
+            <Landmark className="h-5 w-5" /> Nova Conta
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
