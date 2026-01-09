@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getBillingMonth, parseDateOnly } from '@/lib/utils';
@@ -164,7 +165,14 @@ export default function Accounts() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="accounts" className="mt-6 space-y-6">
+        <TabsContent value="accounts" className="mt-6">
+          <motion.div
+            key="accounts"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="space-y-6"
+          >
           {/* Resumo de Contas */}
           <Card className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
             <CardContent className="py-4">
@@ -287,9 +295,17 @@ export default function Accounts() {
               }
             />
           </div>
+          </motion.div>
         </TabsContent>
 
-        <TabsContent value="cards" className="mt-6 space-y-6">
+        <TabsContent value="cards" className="mt-6">
+          <motion.div
+            key="cards"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="space-y-6"
+          >
           {/* Month Navigator */}
           <MonthNavigator 
             selectedDate={selectedDate} 
@@ -485,6 +501,7 @@ export default function Accounts() {
               }
             />
           </div>
+          </motion.div>
         </TabsContent>
       </Tabs>
 
