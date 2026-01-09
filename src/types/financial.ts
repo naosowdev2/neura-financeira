@@ -14,6 +14,8 @@ export interface Account {
   type: string;
   initial_balance: number;
   current_balance: number;
+  calculated_balance?: number;
+  balance_with_pending?: number;
   icon: string | null;
   color: string | null;
   include_in_total: boolean;
@@ -78,6 +80,9 @@ export interface Transaction {
   status: string;
   amount: number;
   description: string;
+  due_date: string;
+  competency_date: string;
+  /** @deprecated Use due_date instead. This is an alias for backwards compatibility. */
   date: string;
   category_id: string | null;
   account_id: string | null;
@@ -91,6 +96,9 @@ export interface Transaction {
   notes: string | null;
   ai_notes: string | null;
   adjustment_reason: string | null;
+  previous_balance: number | null;
+  new_balance: number | null;
+  savings_goal_id: string | null;
   is_recurring: boolean;
   recurrence_rule: string | null;
   created_at: string;
@@ -175,7 +183,8 @@ export interface CreateTransactionInput {
   description: string;
   amount: number;
   type: TransactionType;
-  date: string;
+  due_date: string;
+  competency_date?: string;
   category_id?: string | null;
   account_id?: string | null;
   credit_card_id?: string | null;

@@ -17,18 +17,18 @@ export function useSavingsGoalHistory(goalId: string) {
     queryKey: ['savings-goal-history', goalId],
     queryFn: async () => {
       // Fetch transactions for this savings goal
-      const { data: transactions, error } = await supabase
-        .from('transactions')
+      const { data: transactions, error } = await (supabase
+        .from('transactions') as any)
         .select(`
           id,
           amount,
-          date,
+          due_date,
           notes,
           account_id,
           destination_account_id
         `)
         .eq('savings_goal_id', goalId)
-        .order('date', { ascending: false })
+        .order('due_date', { ascending: false })
         .limit(20);
 
       if (error) throw error;
@@ -43,7 +43,7 @@ export function useSavingsGoalHistory(goalId: string) {
 
       // Transform to our format
       // Use fallback logic for legacy data that might have inverted account_id/destination_account_id
-      const history: SavingsGoalTransaction[] = (transactions || []).map(t => {
+      const history: SavingsGoalTransaction[] = (transactions || []).map((t: any) => {
         const isWithdrawal = t.notes === 'savings_withdrawal';
         // Withdrawal: money goes TO account (destination_account_id), fallback to account_id for legacy
         // Deposit: money comes FROM account (account_id), fallback to destination_account_id for legacy
@@ -55,7 +55,7 @@ export function useSavingsGoalHistory(goalId: string) {
           id: t.id,
           type: isWithdrawal ? 'withdrawal' : 'deposit',
           amount: t.amount,
-          date: t.date,
+          date: t.due_date,
           accountName: accountId ? accountMap.get(accountId) || null : null,
         };
       });

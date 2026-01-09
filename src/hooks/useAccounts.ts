@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Account } from '@/types/financial';
 
 export function useAccounts() {
   const { user } = useAuth();
@@ -9,18 +10,18 @@ export function useAccounts() {
 
   const accountsQuery = useQuery({
     queryKey: ['accounts', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Account[]> => {
       if (!user) return [];
       // Usar a view accounts_with_balance para saldo calculado em tempo real
-      const { data, error } = await supabase
-        .from('accounts_with_balance')
+      const { data, error } = await (supabase
+        .from('accounts_with_balance') as any)
         .select('*')
         .eq('user_id', user.id)
         .eq('is_archived', false)
         .order('name');
       
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Account[];
     },
     enabled: !!user,
   });
