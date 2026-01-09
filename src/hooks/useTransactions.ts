@@ -348,11 +348,30 @@ export function useTransactions() {
           .eq('user_id', user.id);
         if (error) throw error;
       }
+
+      // Verificar se o grupo ficou órfão (sem transações restantes)
+      const { data: remainingTx } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('installment_group_id', installmentGroupId)
+        .eq('user_id', user.id)
+        .limit(1);
+
+      // Se não há mais transações, excluir o grupo
+      if (!remainingTx || remainingTx.length === 0) {
+        const { error: groupError } = await supabase
+          .from('installment_groups')
+          .delete()
+          .eq('id', installmentGroupId)
+          .eq('user_id', user.id);
+        if (groupError) throw groupError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['installments'] });
+      queryClient.invalidateQueries({ queryKey: ['installment_groups'] });
       queryClient.invalidateQueries({ queryKey: ['ai-alerts'] });
       toast.success('Parcela excluída!');
     },
