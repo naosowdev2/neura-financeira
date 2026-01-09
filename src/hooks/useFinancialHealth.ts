@@ -27,8 +27,8 @@ export function useFinancialHealth() {
       if (!user) throw new Error('No user');
 
       // Get accounts with balances
-      const { data: accounts } = await (supabase
-        .from('accounts_with_balance') as any)
+      const { data: accounts } = await (supabase as any)
+        .from('accounts_with_balance')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_archived', false);
@@ -97,13 +97,13 @@ export function useFinancialHealth() {
       const monthStart = format(startOfMonth(now), 'yyyy-MM-dd');
       const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
 
-      const { data: currentMonthTransactions } = await supabase
-        .from('transactions')
+      const { data: currentMonthTransactions } = await (supabase
+        .from('transactions') as any)
         .select('type, amount')
         .eq('user_id', user.id)
         .eq('status', 'confirmed')
-        .gte('date', monthStart)
-        .lte('date', monthEnd);
+        .gte('due_date', monthStart)
+        .lte('due_date', monthEnd);
 
       const monthIncome = (currentMonthTransactions || [])
         .filter(t => t.type === 'income')
@@ -121,13 +121,13 @@ export function useFinancialHealth() {
       const lastMonthStart = format(startOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
       const lastMonthEnd = format(endOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
 
-      const { data: lastMonthTransactions } = await supabase
-        .from('transactions')
+      const { data: lastMonthTransactions } = await (supabase
+        .from('transactions') as any)
         .select('type, amount')
         .eq('user_id', user.id)
         .eq('status', 'confirmed')
-        .gte('date', lastMonthStart)
-        .lte('date', lastMonthEnd);
+        .gte('due_date', lastMonthStart)
+        .lte('due_date', lastMonthEnd);
 
       const lastMonthIncome = (lastMonthTransactions || [])
         .filter(t => t.type === 'income')

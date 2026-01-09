@@ -13,8 +13,8 @@ export function useAccounts() {
     queryFn: async (): Promise<Account[]> => {
       if (!user) return [];
       // Usar a view accounts_with_balance para saldo calculado em tempo real
-      const { data, error } = await (supabase
-        .from('accounts_with_balance') as any)
+      const { data, error } = await (supabase as any)
+        .from('accounts_with_balance')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_archived', false)

@@ -12,8 +12,8 @@ export function useTransactions() {
     queryKey: ['transactions', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
-        .from('transactions')
+      const { data, error } = await (supabase
+        .from('transactions') as any)
         .select(`
           *,
           category:categories(*),
@@ -299,7 +299,7 @@ export function useTransactions() {
         if (error) throw error;
         
         // Update the installment_amount in the group
-        const { error: groupError } = await (supabase.from('installment_groups') as any)
+        const { error: groupError } = await (supabase as any).from('installment_groups')
           .update({ installment_amount: updates.amount })
           .eq('id', installmentGroupId)
           .eq('user_id', user.id);
