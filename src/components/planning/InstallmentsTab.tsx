@@ -330,8 +330,50 @@ export function InstallmentsTab() {
               <AlertDialogContent className="bg-card">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Excluir parcelamento?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta ação não pode ser desfeita. O parcelamento "{group.description}" e todas as suas parcelas serão permanentemente removidos.
+                  <AlertDialogDescription asChild>
+                    <div className="space-y-3">
+                      <p>
+                        Esta ação não pode ser desfeita. O parcelamento "{group.description}" será permanentemente removido.
+                      </p>
+                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Parcelas a excluir:</span>
+                          <span className="font-semibold text-destructive">
+                            {(group.transactions as any[] || []).length} parcelas
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Valor total afetado:</span>
+                          <span className="font-semibold text-destructive">
+                            {formatCurrency(
+                              (group.transactions as any[] || [])
+                                .reduce((sum, t: any) => sum + (t.amount || 0), 0)
+                            )}
+                          </span>
+                        </div>
+                        {group.credit_card && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Cartão:</span>
+                            <span className="font-medium flex items-center gap-1.5">
+                              <CreditCard className="h-3 w-3" />
+                              {group.credit_card.name}
+                            </span>
+                          </div>
+                        )}
+                        {group.account && !group.credit_card && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Conta:</span>
+                            <span className="font-medium flex items-center gap-1.5">
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: group.account.color || '#6366f1' }} 
+                              />
+                              {group.account.name}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -340,7 +382,7 @@ export function InstallmentsTab() {
                     onClick={() => handleDelete(group.id)} 
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    Excluir
+                    Excluir {(group.transactions as any[] || []).length} parcelas
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
