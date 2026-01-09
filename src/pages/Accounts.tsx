@@ -153,7 +153,7 @@ export default function Accounts() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
           <TabsTrigger value="accounts" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
             Contas
