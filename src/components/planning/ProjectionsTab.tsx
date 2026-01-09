@@ -361,10 +361,26 @@ function TransactionItem({ transaction, type }: TransactionItemProps) {
             </Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">
-          {format(new Date(transaction.due_date + 'T12:00:00'), "dd/MM", { locale: ptBR })}
-          {transaction.category && ` • ${transaction.category.name}`}
-        </p>
+        <div className="flex flex-col text-xs text-muted-foreground">
+          <span>
+            {format(new Date(transaction.due_date + 'T12:00:00'), "dd/MM", { locale: ptBR })}
+          </span>
+          {transaction.competency_date && transaction.competency_date !== transaction.due_date && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-purple-400 cursor-help">
+                    Comp: {format(new Date(transaction.competency_date + 'T12:00:00'), "dd/MM", { locale: ptBR })}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="bg-black/90 backdrop-blur-xl border-white/10">
+                  <p className="text-sm">Data de competência diferente do vencimento</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {transaction.category && <span>{transaction.category.name}</span>}
+        </div>
       </div>
       <span className={`font-semibold ${colorClass} shrink-0 ml-2`}>
         {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
