@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, Plus, PiggyBank, Trash2, Edit2, Wallet, Calendar, TrendingUp, Minus, Sparkles, ClipboardList, RefreshCcw, Layers, Scale } from "lucide-react";
+import { Target, Plus, PiggyBank, Trash2, Edit2, PieChart, Wallet, Calendar, TrendingUp, Minus, Sparkles, ClipboardList, RefreshCcw, Layers, Scale } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CategorySelector } from "@/components/forms/CategorySelector";
 import { IconPicker } from "@/components/forms/IconPicker";
@@ -275,7 +275,7 @@ export default function Planning() {
                 value="budgets" 
                 className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2.5 px-3 sm:px-4 snap-start flex-shrink-0 data-[state=active]:shadow-[0_0_12px_-3px_hsl(var(--primary)/0.5)] transition-all duration-200"
               >
-                <Wallet className="h-4 w-4 flex-shrink-0" />
+                <PieChart className="h-4 w-4 flex-shrink-0" />
                 <span className="whitespace-nowrap">Orçamentos</span>
               </TabsTrigger>
               <TabsTrigger 
@@ -345,7 +345,7 @@ export default function Planning() {
                 <DialogContent className="sm:max-w-md bg-card">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                      <Wallet className="h-5 w-5" />
+                      <PieChart className="h-5 w-5" />
                       {editingBudget ? 'Editar Orçamento' : 'Novo Orçamento'}
                     </DialogTitle>
                   </DialogHeader>
@@ -392,7 +392,7 @@ export default function Planning() {
             ) : budgets.length === 0 ? (
               <Card className="glass">
                 <CardContent className="py-12 text-center">
-                  <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <PieChart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="font-semibold mb-2">Nenhum orçamento definido</h3>
                   <p className="text-muted-foreground mb-4">
                     Crie orçamentos para acompanhar seus gastos por categoria
