@@ -6,7 +6,7 @@ import {
   ArrowLeftRight,
   Calendar,
   Tag,
-  Wallet,
+  Landmark,
   CreditCard,
   Repeat,
   Layers,
@@ -256,7 +256,7 @@ export function SmartTransactionPreview({
               {classification.credit_card_id ? (
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <Wallet className="h-4 w-4 text-muted-foreground" />
+                <Landmark className="h-4 w-4 text-muted-foreground" />
               )}
               {classification.type === 'expense' ? 'Pagamento' : 'Conta'}
             </Label>
@@ -295,7 +295,7 @@ export function SmartTransactionPreview({
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
-                          <Wallet className="h-4 w-4" />
+                          <Landmark className="h-4 w-4" />
                           {account.name}
                         </div>
                       </SelectItem>
@@ -327,7 +327,7 @@ export function SmartTransactionPreview({
           <>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-muted-foreground" />
+                <Landmark className="h-4 w-4 text-muted-foreground" />
                 Conta Origem
               </Label>
               <Select
@@ -355,7 +355,7 @@ export function SmartTransactionPreview({
                 {classification.savings_goal_id ? (
                   <PiggyBank className="h-4 w-4 text-muted-foreground" />
                 ) : (
-                  <Wallet className="h-4 w-4 text-muted-foreground" />
+                  <Landmark className="h-4 w-4 text-muted-foreground" />
                 )}
                 Conta Destino
               </Label>
@@ -395,7 +395,7 @@ export function SmartTransactionPreview({
                         .map((account) => (
                           <SelectItem key={account.id} value={account.id}>
                             <div className="flex items-center gap-2">
-                              <Wallet className="h-4 w-4" />
+                              <Landmark className="h-4 w-4" />
                               {account.name}
                             </div>
                           </SelectItem>

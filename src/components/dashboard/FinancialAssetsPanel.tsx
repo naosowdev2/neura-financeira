@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, CreditCard, PiggyBank, Plus, Pencil } from "lucide-react";
+import { Landmark, CreditCard, PiggyBank, Plus, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -75,7 +75,7 @@ export function FinancialAssetsPanel({
       <Tabs defaultValue="accounts" className="w-full">
         <TabsList className="w-full grid grid-cols-3 rounded-none border-b bg-muted/30">
           <TabsTrigger value="accounts" className="gap-1.5 text-xs data-[state=active]:bg-background">
-            <Wallet className="h-3.5 w-3.5" />
+            <Landmark className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Contas</span>
           </TabsTrigger>
           <TabsTrigger value="cards" className="gap-1.5 text-xs data-[state=active]:bg-background">
