@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getBillingMonth, parseDateOnly } from '@/lib/utils';
 import { ptBR } from 'date-fns/locale';
-import { Wallet, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon, Info } from 'lucide-react';
+import { Landmark, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon, Info } from 'lucide-react';
 import { CreditLimitBreakdown } from '@/components/accounts/CreditLimitBreakdown';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -154,7 +154,7 @@ export default function Accounts() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="accounts" className="flex items-center gap-2">
-            <Wallet className="h-4 w-4" />
+            <Landmark className="h-4 w-4" />
             Contas
           </TabsTrigger>
           <TabsTrigger value="cards" className="flex items-center gap-2">
