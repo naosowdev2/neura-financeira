@@ -58,19 +58,7 @@ export function useRecurrenceProcessor() {
     const originalDay = startDate.getDate(); // Preserve original day (e.g., 5)
     const endDate = recurrence.end_date ? parseDateOnly(recurrence.end_date) : null;
 
-    // If start_date is in the future, don't process yet - keep next_occurrence as start_date
-    if (isAfter(startDate, today)) {
-      // Ensure next_occurrence is set to start_date if not already
-      if (recurrence.next_occurrence !== recurrence.start_date) {
-        await (supabase.from('recurrences') as any)
-          .update({ next_occurrence: recurrence.start_date })
-          .eq('id', recurrence.id)
-          .eq('user_id', user.id);
-      }
-      return;
-    }
-
-    // Find existing transactions for this recurrence
+    // Find existing transactions for this recurrence FIRST
     const { data: existingTransactions } = await supabase
       .from('transactions')
       .select('date')
@@ -81,7 +69,45 @@ export function useRecurrenceProcessor() {
       (existingTransactions || []).map((t) => t.date)
     );
 
-    // Calculate dates to generate
+    // If start_date is in the future, create only the initial transaction as pending
+    // (subsequent occurrences will be generated when their dates arrive)
+    if (isAfter(startDate, today)) {
+      const dateStr = formatDateOnly(startDate);
+      
+      // Check if initial transaction already exists
+      if (!existingDates.has(dateStr)) {
+        const { error } = await (supabase.from('transactions') as any)
+          .insert({
+            user_id: user.id,
+            type: recurrence.type as string,
+            description: recurrence.description,
+            amount: recurrence.amount,
+            date: dateStr,
+            category_id: recurrence.category_id,
+            account_id: recurrence.account_id,
+            credit_card_id: recurrence.credit_card_id,
+            status: 'pending',
+            is_recurring: true,
+            recurrence_id: recurrence.id,
+          });
+
+        if (error && error.code !== '23505') {
+          console.error('Error creating future transaction:', error);
+          throw error;
+        }
+      }
+
+      // Ensure next_occurrence is set to start_date
+      if (recurrence.next_occurrence !== recurrence.start_date) {
+        await (supabase.from('recurrences') as any)
+          .update({ next_occurrence: recurrence.start_date })
+          .eq('id', recurrence.id)
+          .eq('user_id', user.id);
+      }
+      return;
+    }
+
+    // Calculate dates to generate for current/past recurrences
     const datesToGenerate: string[] = [];
     let currentDate = startDate;
 
