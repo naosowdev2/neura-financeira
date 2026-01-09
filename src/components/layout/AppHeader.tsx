@@ -86,8 +86,6 @@ export function AppHeader() {
                   <Icon className="h-4 w-4 sm:mr-2 transition-transform duration-200 group-hover:scale-110" />
                   <span className="hidden md:inline">{item.label}</span>
                   
-                  {/* Active indicator bar */}
-                  {isActive && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full shadow-[0_0_10px_hsl(var(--primary))]" />}
                 </RippleButton>
               </Link>
             );
