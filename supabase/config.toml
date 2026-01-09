@@ -1,1 +1,43 @@
-project_id = "xvvoqzicojzdpkuqfshj"
+project_id = "zedzzgfvpbwuivuwgjyx"
+
+[functions.ai-categorize]
+verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.ai-spending-analysis]
+verify_jwt = false
+
+[functions.ai-savings-advisor]
+verify_jwt = false
+
+[functions.ai-transaction-classifier]
+verify_jwt = false
+
+[functions.ai-impact-analyzer]
+verify_jwt = false
+
+[functions.ai-observation-generator]
+verify_jwt = false
+
+[functions.ai-alerts-monitor]
+verify_jwt = false
+
+[functions.ai-invoice-analyzer]
+verify_jwt = false
+
+[functions.push-notifications]
+verify_jwt = false
+
+[functions.get-vapid-key]
+verify_jwt = false
+
+[functions.generate-vapid-keys]
+verify_jwt = false
+
+[functions.ai-weekly-summary]
+verify_jwt = false
+
+[functions.scheduled-alerts-push]
+verify_jwt = false

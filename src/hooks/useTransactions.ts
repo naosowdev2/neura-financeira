@@ -12,8 +12,8 @@ export function useTransactions() {
     queryKey: ['transactions', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await (supabase
-        .from('transactions') as any)
+      const { data, error } = await supabase
+        .from('transactions')
         .select(`
           *,
           category:categories(*),
@@ -21,13 +21,9 @@ export function useTransactions() {
           destination_account:accounts!transactions_destination_account_id_fkey(*)
         `)
         .eq('user_id', user.id)
-        .order('due_date', { ascending: false });
+        .order('date', { ascending: false });
       if (error) throw error;
-      // Map due_date to date for backwards compatibility
-      return (data ?? []).map((t: any) => ({
-        ...t,
-        date: t.due_date, // Alias for backwards compatibility
-      }));
+      return data ?? [];
     },
     enabled: !!user,
   });
@@ -42,7 +38,7 @@ export function useTransactions() {
       if (transactionData.credit_card_id && transactionData.type === 'expense' && !transactionData.invoice_id) {
         const { data: invoiceId, error: invoiceError } = await (supabase.rpc as any)('get_or_create_invoice', {
           p_credit_card_id: transactionData.credit_card_id,
-          p_transaction_date: transactionData.due_date,
+          p_transaction_date: transactionData.date,
           p_user_id: user.id,
         });
         
@@ -175,7 +171,7 @@ export function useTransactions() {
             .eq('recurrence_id', recurrenceId)
             .eq('status', 'pending')
             .eq('user_id', user.id)
-            .gt('due_date', transactionDate);
+            .gt('date', transactionDate);
           if (futureError) throw futureError;
         }
       }
@@ -236,7 +232,7 @@ export function useTransactions() {
             .eq('recurrence_id', recurrenceId)
             .eq('status', 'pending')
             .eq('user_id', user.id)
-            .gte('due_date', transactionDate);
+            .gte('date', transactionDate);
           if (deleteError) throw deleteError;
         } else {
           // No recurrence, just delete this transaction
@@ -299,7 +295,7 @@ export function useTransactions() {
         if (error) throw error;
         
         // Update the installment_amount in the group
-        const { error: groupError } = await (supabase as any).from('installment_groups')
+        const { error: groupError } = await (supabase.from('installment_groups') as any)
           .update({ installment_amount: updates.amount })
           .eq('id', installmentGroupId)
           .eq('user_id', user.id);

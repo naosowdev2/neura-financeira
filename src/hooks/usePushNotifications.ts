@@ -95,7 +95,7 @@ export function usePushNotifications() {
     if (!user || !isSupported) return;
     
     async function checkDbSubscription() {
-      const { data } = await (supabase as any)
+      const { data } = await supabase
         .from('push_subscriptions')
         .select('id, endpoint')
         .eq('user_id', user!.id)
@@ -199,15 +199,15 @@ export function usePushNotifications() {
       }
 
       // Save subscription to database
-      const { data: existing } = await (supabase as any)
+      const { data: existing } = await supabase
         .from('push_subscriptions')
         .select('id')
         .eq('endpoint', subscription.endpoint)
         .limit(1);
 
       if (existing && existing.length > 0) {
-        const { error: updateError } = await (supabase as any)
-          .from('push_subscriptions')
+        const { error: updateError } = await (supabase
+          .from('push_subscriptions') as any)
           .update({
             p256dh: p256dh,
             auth: auth,
@@ -220,8 +220,8 @@ export function usePushNotifications() {
           throw new Error('Falha ao atualizar subscription');
         }
       } else {
-        const { error: insertError } = await (supabase as any)
-          .from('push_subscriptions')
+        const { error: insertError } = await (supabase
+          .from('push_subscriptions') as any)
           .insert({
             user_id: user.id,
             endpoint: subscription.endpoint,
@@ -261,7 +261,7 @@ export function usePushNotifications() {
         if (subscription) {
           await subscription.unsubscribe();
           
-          await (supabase as any)
+          await supabase
             .from('push_subscriptions')
             .delete()
             .eq('endpoint', subscription.endpoint)

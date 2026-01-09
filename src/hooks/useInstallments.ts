@@ -32,8 +32,8 @@ export function useInstallments() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await (supabase as any)
-        .from('installment_groups')
+      const { data, error } = await (supabase
+        .from('installment_groups') as any)
         .select('*, category:categories(*), account:accounts(*), credit_card:credit_cards(*), transactions(id, status, installment_number, date, amount)')
         .eq('user_id', user.id)
         .order('first_installment_date', { ascending: false });
@@ -66,8 +66,8 @@ export function useInstallments() {
       }
       
       // Create the installment group
-      const { data: group, error: groupError } = await (supabase as any)
-        .from('installment_groups')
+      const { data: group, error: groupError } = await (supabase
+        .from('installment_groups') as any)
         .insert({
           user_id: user.id,
           description: input.description,
@@ -174,8 +174,8 @@ export function useInstallments() {
       const { id, update_future_transactions = true, total_installments, starting_installment, ...updates } = input;
 
       // Fetch current group with transactions
-      const { data: currentGroup, error: fetchError } = await (supabase as any)
-        .from('installment_groups')
+      const { data: currentGroup, error: fetchError } = await (supabase
+        .from('installment_groups') as any)
         .select('*, transactions(id, installment_number, status, date)')
         .eq('id', id)
         .eq('user_id', user.id)
@@ -213,8 +213,8 @@ export function useInstallments() {
       if (updates.credit_card_id !== undefined) groupUpdates.credit_card_id = updates.credit_card_id;
       if (updates.installment_amount !== undefined) groupUpdates.installment_amount = updates.installment_amount;
 
-      const { error: groupError } = await (supabase as any)
-        .from('installment_groups')
+      const { error: groupError } = await (supabase
+        .from('installment_groups') as any)
         .update(groupUpdates)
         .eq('id', id)
         .eq('user_id', user.id);
@@ -363,8 +363,8 @@ export function useInstallments() {
       if (transactionsError) throw transactionsError;
       
       // Then delete the group
-      const { error } = await (supabase as any)
-        .from('installment_groups')
+      const { error } = await (supabase
+        .from('installment_groups') as any)
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);

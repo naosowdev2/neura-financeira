@@ -15,8 +15,6 @@ interface Transaction {
   amount: number;
   type: string;
   date: string;
-  due_date?: string;
-  competency_date?: string;
   category?: { name: string; color: string } | null;
   account?: { name: string } | null;
   category_id?: string;
@@ -196,24 +194,9 @@ export function RecentTransactions({ transactions }: Props) {
                 {!transaction.category && <div className="hidden md:block" />}
 
                 {/* Col 3: Data (hidden mobile) */}
-                <div className="hidden md:flex flex-col text-sm">
-                  <span className="text-muted-foreground whitespace-nowrap">
-                    {format(new Date((transaction.due_date || transaction.date) + 'T12:00:00'), "dd MMM", { locale: ptBR })}
-                  </span>
-                  {transaction.competency_date && transaction.due_date && 
-                   transaction.competency_date !== transaction.due_date && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-xs text-purple-400 whitespace-nowrap cursor-help">
-                          Comp: {format(new Date(transaction.competency_date + 'T12:00:00'), "dd/MM", { locale: ptBR })}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-black/90 backdrop-blur-xl border-white/10">
-                        <p className="text-sm">Data de competência diferente do vencimento</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
+                <span className="hidden md:block text-sm text-muted-foreground whitespace-nowrap">
+                  {format(new Date(transaction.date), "dd MMM", { locale: ptBR })}
+                </span>
 
                 {/* Col 4: Valor + Botão Editar */}
                 <div className="flex items-center gap-2 justify-end">

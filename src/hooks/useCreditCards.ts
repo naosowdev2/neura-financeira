@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import type { CreditCard } from '@/types/financial';
 
 export function useCreditCards() {
   const { user } = useAuth();
@@ -10,7 +9,7 @@ export function useCreditCards() {
 
   const creditCardsQuery = useQuery({
     queryKey: ['credit_cards', user?.id],
-    queryFn: async (): Promise<CreditCard[]> => {
+    queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from('credit_cards')
@@ -19,10 +18,7 @@ export function useCreditCards() {
         .eq('is_archived', false)
         .order('name');
       if (error) throw error;
-      return (data ?? []).map(card => ({
-        ...card,
-        payment_account_id: null, // Campo não existe na tabela, adicionar default
-      })) as CreditCard[];
+      return data ?? [];
     },
     enabled: !!user,
   });

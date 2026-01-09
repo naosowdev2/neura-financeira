@@ -8,8 +8,7 @@ export interface ProjectionTransaction {
   type: string;
   description: string;
   amount: number;
-  due_date: string;
-  competency_date?: string;
+  date: string;
   status: string;
   is_recurring?: boolean;
   category?: {
@@ -58,7 +57,7 @@ export function useProjections(selectedDate: Date) {
         .select('*')
         .eq('user_id', user.id)
         .in('status', ['confirmed', 'pending'])
-        .lt('due_date', monthStart)
+        .lt('date', monthStart)
         .is('credit_card_id', null);
 
       // Filter out savings goal transactions for balance calculation
@@ -86,10 +85,10 @@ export function useProjections(selectedDate: Date) {
           category:categories(name, color)
         `)
         .eq('user_id', user.id)
-        .gte('due_date', monthStart)
-        .lte('due_date', monthEnd)
+        .gte('date', monthStart)
+        .lte('date', monthEnd)
         .is('credit_card_id', null)
-        .order('due_date');
+        .order('date');
 
       // Filter out savings goal transactions
       const validTransactions = (monthTransactions || []).filter(t => !t.savings_goal_id);
@@ -102,8 +101,7 @@ export function useProjections(selectedDate: Date) {
           type: t.type,
           description: t.description,
           amount: Number(t.amount),
-          due_date: t.due_date,
-          competency_date: t.competency_date,
+          date: t.date,
           status: t.status,
           is_recurring: t.is_recurring,
           category: t.category,
@@ -116,8 +114,7 @@ export function useProjections(selectedDate: Date) {
           type: t.type,
           description: t.description,
           amount: Number(t.amount),
-          due_date: t.due_date,
-          competency_date: t.competency_date,
+          date: t.date,
           status: t.status,
           is_recurring: t.is_recurring,
           category: t.category,

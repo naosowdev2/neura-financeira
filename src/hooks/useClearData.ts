@@ -155,7 +155,7 @@ export function useClearData() {
         });
 
         try {
-          const { error } = await (supabase as any)
+          const { error } = await supabase
             .from(table)
             .delete()
             .eq('user_id', user.id);

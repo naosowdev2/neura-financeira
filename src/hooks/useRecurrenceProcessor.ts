@@ -73,12 +73,12 @@ export function useRecurrenceProcessor() {
     // Find existing transactions for this recurrence
     const { data: existingTransactions } = await supabase
       .from('transactions')
-      .select('due_date')
+      .select('date')
       .eq('recurrence_id', recurrence.id)
       .eq('user_id', user.id);
 
     const existingDates = new Set(
-      (existingTransactions || []).map((t: any) => t.due_date)
+      (existingTransactions || []).map((t) => t.date)
     );
 
     // Calculate dates to generate
@@ -106,14 +106,12 @@ export function useRecurrenceProcessor() {
 
     // Create transactions for missing dates using insert
     if (datesToGenerate.length > 0) {
-      const today = formatDateOnly(new Date());
       const transactionsToCreate = datesToGenerate.map((dateStr) => ({
         user_id: user.id,
         type: recurrence.type as string,
         description: recurrence.description,
         amount: recurrence.amount,
-        due_date: dateStr,
-        competency_date: today, // Data de competência = hoje (quando foi criada)
+        date: dateStr,
         category_id: recurrence.category_id,
         account_id: recurrence.account_id,
         credit_card_id: recurrence.credit_card_id,
@@ -138,7 +136,7 @@ export function useRecurrenceProcessor() {
 
     // Calculate next_occurrence based on the latest transaction date
     const allDates = [
-      ...(existingTransactions || []).map((t: any) => t.due_date),
+      ...(existingTransactions || []).map(t => t.date),
       ...datesToGenerate
     ].sort();
     
@@ -186,8 +184,6 @@ export function useRecurrenceProcessor() {
   const createInitialTransaction = async (recurrence: Recurrence) => {
     if (!user) return;
 
-    const today = formatDateOnly(new Date());
-    
     // Use insert - the partial unique index prevents duplicates
     const { error } = await (supabase
       .from('transactions') as any)
@@ -196,8 +192,7 @@ export function useRecurrenceProcessor() {
         type: recurrence.type as string,
         description: recurrence.description,
         amount: recurrence.amount,
-        due_date: recurrence.start_date,
-        competency_date: today, // Data de competência = hoje
+        date: recurrence.start_date,
         category_id: recurrence.category_id,
         account_id: recurrence.account_id,
         credit_card_id: recurrence.credit_card_id,
