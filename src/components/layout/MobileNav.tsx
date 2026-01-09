@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Menu, X, LogOut, LayoutDashboard, FileText, Target, Tags, Settings, Wallet, Clock } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, FileText, Target, Tags, Settings, Landmark, Clock } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,7 @@ import { useOtherMonthsPending } from "@/hooks/useOtherMonthsPending";
 import { PendingExpensesDetails } from "@/components/dashboard/PendingExpensesDetails";
 const navItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/accounts", label: "Contas", icon: Wallet },
+  { path: "/accounts", label: "Contas", icon: Landmark },
   { path: "/reports", label: "Relatórios", icon: FileText },
   { path: "/planning?tab=projections", label: "Planejamento", icon: Target },
   { path: "/categories", label: "Categorias", icon: Tags },

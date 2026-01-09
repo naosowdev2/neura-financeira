@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CurrencyField } from "./CurrencyField";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeftRight, ArrowRight, PiggyBank, Wallet } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, PiggyBank, Landmark } from "lucide-react";
 import { format } from "date-fns";
 
 function formatCurrency(value: number) {
@@ -295,7 +295,7 @@ export function TransferFormDialog({ trigger }: Props) {
                 {validSourceAccounts.length > 0 && (
                   <SelectGroup>
                     <SelectLabel className="flex items-center gap-2">
-                      <Wallet className="h-4 w-4" /> Contas
+                      <Landmark className="h-4 w-4" /> Contas
                     </SelectLabel>
                     {validSourceAccounts.map((acc) => (
                       <SelectItem key={acc.id} value={acc.id}>
@@ -343,7 +343,7 @@ export function TransferFormDialog({ trigger }: Props) {
                   </>
                 ) : (
                   <>
-                    <Wallet className="h-4 w-4 text-muted-foreground" />
+                    <Landmark className="h-4 w-4 text-muted-foreground" />
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: sourceAccount?.color || '#6366f1' }} />
                     <span className="text-sm font-medium">{sourceAccount?.name}</span>
                   </>
@@ -359,7 +359,7 @@ export function TransferFormDialog({ trigger }: Props) {
                   </>
                 ) : (
                   <>
-                    <Wallet className="h-4 w-4 text-muted-foreground" />
+                    <Landmark className="h-4 w-4 text-muted-foreground" />
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: destAccount?.color || '#6366f1' }} />
                     <span className="text-sm font-medium">{destAccount?.name}</span>
                   </>
@@ -378,7 +378,7 @@ export function TransferFormDialog({ trigger }: Props) {
                 {validDestAccounts.length > 0 && (
                   <SelectGroup>
                     <SelectLabel className="flex items-center gap-2">
-                      <Wallet className="h-4 w-4" /> Contas
+                      <Landmark className="h-4 w-4" /> Contas
                     </SelectLabel>
                     {validDestAccounts.map((acc) => (
                       <SelectItem key={acc.id} value={acc.id}>
