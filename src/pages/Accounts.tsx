@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { getBillingMonth, parseDateOnly } from '@/lib/utils';
 import { ptBR } from 'date-fns/locale';
 import { Landmark, CreditCard, Plus, Pencil, History, Scale, BanknoteIcon, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CreditLimitBreakdown } from '@/components/accounts/CreditLimitBreakdown';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -228,28 +229,46 @@ export default function Accounts() {
                         <Pencil className="h-3 w-3 mr-1" />
                         Editar
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAdjustmentAccount(account);
-                          setAdjustmentDialogOpen(true);
-                        }}
-                      >
-                        <Scale className="h-3 w-3" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setHistoryAccount(account);
-                          setHistorySheetOpen(true);
-                        }}
-                      >
-                        <History className="h-3 w-3" />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAdjustmentAccount(account);
+                                setAdjustmentDialogOpen(true);
+                              }}
+                            >
+                              <Scale className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Ajustar Saldo</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setHistoryAccount(account);
+                                setHistorySheetOpen(true);
+                              }}
+                            >
+                              <History className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Histórico</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </CardContent>
                 </Card>
