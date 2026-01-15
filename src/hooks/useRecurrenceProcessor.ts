@@ -69,43 +69,8 @@ export function useRecurrenceProcessor() {
       (existingTransactions || []).map((t) => t.date)
     );
 
-    // If start_date is in the future, create only the initial transaction as pending
-    // (subsequent occurrences will be generated when their dates arrive)
-    if (isAfter(startDate, today)) {
-      const dateStr = formatDateOnly(startDate);
-      
-      // Check if initial transaction already exists
-      if (!existingDates.has(dateStr)) {
-        const { error } = await (supabase.from('transactions') as any)
-          .insert({
-            user_id: user.id,
-            type: recurrence.type as string,
-            description: recurrence.description,
-            amount: recurrence.amount,
-            date: dateStr,
-            category_id: recurrence.category_id,
-            account_id: recurrence.account_id,
-            credit_card_id: recurrence.credit_card_id,
-            status: 'pending',
-            is_recurring: true,
-            recurrence_id: recurrence.id,
-          });
-
-        if (error && error.code !== '23505') {
-          console.error('Error creating future transaction:', error);
-          throw error;
-        }
-      }
-
-      // Ensure next_occurrence is set to start_date
-      if (recurrence.next_occurrence !== recurrence.start_date) {
-        await (supabase.from('recurrences') as any)
-          .update({ next_occurrence: recurrence.start_date })
-          .eq('id', recurrence.id)
-          .eq('user_id', user.id);
-      }
-      return;
-    }
+    // For recurrences with start_date in the future, we still need to generate
+    // all occurrences up to the futureLimit (so they appear when navigating months)
 
     // Calculate dates to generate for current/past recurrences
     const datesToGenerate: string[] = [];

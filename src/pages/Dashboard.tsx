@@ -82,22 +82,23 @@ export default function Dashboard() {
     }
   }, [user]);
 
-  // Process recurrences when navigating to future months beyond initial horizon
-  const lastProcessedMonth = useRef<string | null>(null);
+  // Process recurrences when navigating to future months
+  const lastProcessedMonthsAhead = useRef<number>(6);
   
   useEffect(() => {
     if (!user) return;
     
-    const selectedMonthKey = format(selectedDate, 'yyyy-MM');
     const currentMonth = new Date();
     const monthsDiff = (selectedDate.getFullYear() - currentMonth.getFullYear()) * 12 + 
                        (selectedDate.getMonth() - currentMonth.getMonth());
     
-    // If navigating to a future month (3+ months ahead) and we haven't processed for this range yet
-    if (monthsDiff >= 3 && lastProcessedMonth.current !== selectedMonthKey) {
-      lastProcessedMonth.current = selectedMonthKey;
-      // Process recurrences up to the selected month + 3 more months
-      processRecurrences.mutate(monthsDiff + 3);
+    // Calculate how many months ahead we need to process
+    const monthsNeeded = monthsDiff + 3; // +3 for buffer
+    
+    // Only reprocess if we need more months than we've already processed
+    if (monthsNeeded > lastProcessedMonthsAhead.current) {
+      lastProcessedMonthsAhead.current = monthsNeeded;
+      processRecurrences.mutate(monthsNeeded);
     }
   }, [selectedDate, user]);
 
