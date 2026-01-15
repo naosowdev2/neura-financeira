@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { LogOut, FileText, Target, Tags, Settings, LayoutDashboard, Landmark, Clock } from "lucide-react";
+import { LogOut, FileText, Target, Tags, Settings, LayoutDashboard, Landmark } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { RippleButton } from "@/components/ui/ripple-button";
@@ -7,10 +6,8 @@ import { cn } from "@/lib/utils";
 import { MobileNav } from "./MobileNav";
 import neuraIcon from "@/assets/neura-icon.png";
 import { useQueryClient } from "@tanstack/react-query";
-import { useOtherMonthsPending } from "@/hooks/useOtherMonthsPending";
 import { usePWA } from "@/hooks/usePWA";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { PendingExpensesDetails } from "@/components/dashboard/PendingExpensesDetails";
 
 const navItems = [{
   path: "/dashboard",
@@ -39,9 +36,7 @@ export function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: otherMonthsPending } = useOtherMonthsPending();
   const { needRefresh } = usePWA();
-  const [showOtherMonthsDetails, setShowOtherMonthsDetails] = useState(false);
 
   const handleSignOut = async () => {
     // Clear all cached queries first
@@ -94,33 +89,6 @@ export function AppHeader() {
 
         {/* User Actions */}
         <div className="hidden md:flex items-center gap-2">
-          {/* Other months pending badge - clickable */}
-          {otherMonthsPending && otherMonthsPending.count > 0 && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button 
-                    onClick={() => setShowOtherMonthsDetails(true)}
-                    className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 cursor-pointer hover:bg-amber-500/20 transition-colors"
-                  >
-                    <Clock className="h-3.5 w-3.5 text-amber-400" />
-                    <span className="text-xs font-medium text-amber-400">
-                      {otherMonthsPending.count}
-                    </span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-popover border-border">
-                  <p className="text-sm">
-                    {otherMonthsPending.count} despesa{otherMonthsPending.count > 1 ? 's' : ''} pendente{otherMonthsPending.count > 1 ? 's' : ''} em outros meses
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Total: R$ {otherMonthsPending.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-xs text-primary mt-1">Clique para ver detalhes</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
           
           <TooltipProvider>
             <Tooltip>
@@ -152,16 +120,6 @@ export function AppHeader() {
         </div>
       </div>
 
-      {/* Other months pending details modal */}
-      {otherMonthsPending && (
-        <PendingExpensesDetails
-          open={showOtherMonthsDetails}
-          onOpenChange={setShowOtherMonthsDetails}
-          pendingExpenses={otherMonthsPending.transactions || []}
-          totalPending={otherMonthsPending.total}
-          monthLabel="outros meses"
-        />
-      )}
     </header>
   );
 }
