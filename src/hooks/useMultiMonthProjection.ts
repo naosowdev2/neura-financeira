@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { startOfMonth, endOfMonth, format, addMonths, differenceInMonths, isSameMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, format, addMonths, addWeeks, addDays, addYears, differenceInMonths, isBefore, isAfter, getDaysInMonth, setDate } from 'date-fns';
 import { ScenarioItem } from '@/components/planning/AddScenarioDialog';
 
 interface MonthProjection {
@@ -20,6 +20,97 @@ export interface MultiMonthProjectionData {
   scenarioImpact: number;
   monthBreakdown: MonthProjection[];
   isSimulating: boolean;
+}
+
+type FrequencyType = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly';
+
+// Helper to calculate occurrences for a recurrence within a date range
+function getRecurrenceOccurrencesInRange(
+  recurrence: {
+    id: string;
+    amount: number;
+    type: string;
+    start_date: string;
+    end_date: string | null;
+    frequency: string;
+    is_active: boolean;
+  },
+  rangeStart: Date,
+  rangeEnd: Date
+): { date: string; amount: number; type: string }[] {
+  if (!recurrence.is_active) return [];
+  
+  const occurrences: { date: string; amount: number; type: string }[] = [];
+  const startDate = new Date(recurrence.start_date + 'T12:00:00');
+  const endDate = recurrence.end_date ? new Date(recurrence.end_date + 'T12:00:00') : null;
+  const originalDay = startDate.getDate();
+  
+  // If recurrence hasn't started yet or already ended before range
+  if (isAfter(startDate, rangeEnd)) return [];
+  if (endDate && isBefore(endDate, rangeStart)) return [];
+  
+  let currentDate = new Date(startDate);
+  
+  // Fast-forward to the range if start is before range
+  while (isBefore(currentDate, rangeStart)) {
+    currentDate = getNextOccurrence(currentDate, recurrence.frequency as FrequencyType, originalDay);
+    // Safety check to prevent infinite loops
+    if (isAfter(currentDate, rangeEnd)) return [];
+  }
+  
+  // Generate occurrences within range
+  let safetyCounter = 0;
+  const maxIterations = 100;
+  
+  while (!isAfter(currentDate, rangeEnd) && safetyCounter < maxIterations) {
+    safetyCounter++;
+    
+    // Check end date
+    if (endDate && isAfter(currentDate, endDate)) break;
+    
+    // Only add if within range
+    if (!isBefore(currentDate, rangeStart) && !isAfter(currentDate, rangeEnd)) {
+      occurrences.push({
+        date: format(currentDate, 'yyyy-MM-dd'),
+        amount: Number(recurrence.amount),
+        type: recurrence.type,
+      });
+    }
+    
+    currentDate = getNextOccurrence(currentDate, recurrence.frequency as FrequencyType, originalDay);
+  }
+  
+  return occurrences;
+}
+
+function getNextOccurrence(date: Date, frequency: FrequencyType, originalDay: number): Date {
+  let nextDate: Date;
+  
+  switch (frequency) {
+    case 'daily':
+      nextDate = addDays(date, 1);
+      break;
+    case 'weekly':
+      nextDate = addWeeks(date, 1);
+      break;
+    case 'biweekly':
+      nextDate = addWeeks(date, 2);
+      break;
+    case 'monthly':
+      nextDate = addMonths(date, 1);
+      // Preserve original day
+      const maxDayInMonth = getDaysInMonth(nextDate);
+      const targetDay = Math.min(originalDay, maxDayInMonth);
+      nextDate = setDate(nextDate, targetDay);
+      break;
+    case 'yearly':
+      nextDate = addYears(date, 1);
+      break;
+    default:
+      nextDate = addMonths(date, 1);
+  }
+  
+  return nextDate;
 }
 
 async function fetchMonthProjection(userId: string, targetDate: Date) {
@@ -68,13 +159,55 @@ async function fetchMonthProjection(userId: string, targetDate: Date) {
 
   const validTransactions = (monthTransactions || []).filter(t => !t.savings_goal_id);
 
-  const projectedIncome = validTransactions
+  // Fetch active recurrences
+  const { data: recurrences } = await supabase
+    .from('recurrences')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .is('credit_card_id', null);
+
+  // Get existing recurrence transaction dates to avoid duplicates
+  const existingRecurrenceDates = new Set(
+    validTransactions
+      .filter(t => t.recurrence_id)
+      .map(t => `${t.recurrence_id}-${t.date}`)
+  );
+
+  // Calculate projected income and expenses from recurrences
+  const rangeStart = startOfMonth(targetDate);
+  const rangeEnd = endOfMonth(targetDate);
+  
+  let projectedIncomeFromRecurrences = 0;
+  let projectedExpensesFromRecurrences = 0;
+  
+  for (const recurrence of recurrences || []) {
+    const occurrences = getRecurrenceOccurrencesInRange(recurrence, rangeStart, rangeEnd);
+    
+    for (const occurrence of occurrences) {
+      const key = `${recurrence.id}-${occurrence.date}`;
+      if (!existingRecurrenceDates.has(key)) {
+        if (occurrence.type === 'income') {
+          projectedIncomeFromRecurrences += occurrence.amount;
+        } else if (occurrence.type === 'expense') {
+          projectedExpensesFromRecurrences += occurrence.amount;
+        }
+      }
+    }
+  }
+
+  // Calculate totals from existing transactions
+  const incomeFromTransactions = validTransactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  const projectedExpenses = validTransactions
+  const expensesFromTransactions = validTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
+
+  // Combine existing transactions with projected recurrences
+  const projectedIncome = incomeFromTransactions + projectedIncomeFromRecurrences;
+  const projectedExpenses = expensesFromTransactions + projectedExpensesFromRecurrences;
 
   return {
     initialBalance,
