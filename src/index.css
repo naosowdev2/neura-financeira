@@ -497,4 +497,23 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* ========== HIDE LOVABLE BADGE ========== */
+  #lovable-badge,
+  #lovable-badge-close,
+  #lovable-badge-cta,
+  #lovable-badge-divider,
+  #lovable-badge-text,
+  aside[aria-label="Edit with Lovable"],
+  aside[aria-label="Edit with Lovable"] * {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0) !important;
+  }
 }
