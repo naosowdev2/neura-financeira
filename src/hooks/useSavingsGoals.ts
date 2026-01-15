@@ -240,6 +240,64 @@ export function useSavingsGoals() {
     },
   });
 
+  // Add interest/yield without creating a transaction (internal adjustment)
+  const addInterest = useMutation({
+    mutationFn: async ({ id, amount, description }: { id: string; amount: number; description?: string }) => {
+      const goal = savingsGoalsQuery.data?.find(g => g.id === id);
+      if (!goal) throw new Error('Cofrinho não encontrado');
+
+      const newAmount = goal.current_amount + amount;
+      const isCompleted = goal.target_amount ? newAmount >= goal.target_amount : false;
+
+      // Create an internal transaction record for history (no account involved)
+      if (user) {
+        const { error: txError } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            type: 'income',
+            amount: amount,
+            description: description || `Rendimento: ${goal.name}`,
+            date: new Date().toISOString().split('T')[0],
+            account_id: null,
+            destination_account_id: null,
+            status: 'confirmed',
+            savings_goal_id: id,
+            notes: 'savings_interest',
+          } as any);
+
+        if (txError) throw txError;
+      }
+
+      const { data, error } = await savingsGoalsTable()
+        .update({ 
+          current_amount: newAmount,
+          is_completed: isCompleted,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as SavingsGoal;
+    },
+    onSuccess: (data: SavingsGoal) => {
+      queryClient.invalidateQueries({ queryKey: ['savings-goals'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-alerts'] });
+      if (data.is_completed) {
+        toast.success('Parabéns! Meta atingida com rendimentos! 🎉');
+      } else {
+        toast.success('Rendimento adicionado ao cofrinho!');
+      }
+    },
+    onError: (error) => {
+      toast.error('Erro ao adicionar rendimento');
+      console.error(error);
+    },
+  });
+
   return {
     savingsGoals: savingsGoalsQuery.data || [],
     isLoading: savingsGoalsQuery.isLoading,
@@ -248,5 +306,6 @@ export function useSavingsGoals() {
     deleteSavingsGoal,
     contribute,
     withdraw,
+    addInterest,
   };
 }
