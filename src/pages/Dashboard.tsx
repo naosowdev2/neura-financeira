@@ -78,9 +78,28 @@ export default function Dashboard() {
   useEffect(() => {
     if (user && !hasProcessedRecurrences.current) {
       hasProcessedRecurrences.current = true;
-      processRecurrences.mutate(3); // Generate 3 months ahead
+      processRecurrences.mutate(6); // Generate 6 months ahead initially
     }
   }, [user]);
+
+  // Process recurrences when navigating to future months beyond initial horizon
+  const lastProcessedMonth = useRef<string | null>(null);
+  
+  useEffect(() => {
+    if (!user) return;
+    
+    const selectedMonthKey = format(selectedDate, 'yyyy-MM');
+    const currentMonth = new Date();
+    const monthsDiff = (selectedDate.getFullYear() - currentMonth.getFullYear()) * 12 + 
+                       (selectedDate.getMonth() - currentMonth.getMonth());
+    
+    // If navigating to a future month (3+ months ahead) and we haven't processed for this range yet
+    if (monthsDiff >= 3 && lastProcessedMonth.current !== selectedMonthKey) {
+      lastProcessedMonth.current = selectedMonthKey;
+      // Process recurrences up to the selected month + 3 more months
+      processRecurrences.mutate(monthsDiff + 3);
+    }
+  }, [selectedDate, user]);
 
   // Calculate expenses by category for chart (subcategories) - using ALL month transactions
   const expensesByCategory = useMemo(() => {
