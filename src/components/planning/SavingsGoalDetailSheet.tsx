@@ -17,7 +17,8 @@ import {
   Target, 
   Wallet,
   Sparkles,
-  PiggyBank
+  PiggyBank,
+  Percent
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -43,6 +44,7 @@ interface SavingsGoalDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onDeposit: (goal: SavingsGoal) => void;
   onWithdraw: (goal: SavingsGoal) => void;
+  onInterest: (goal: SavingsGoal) => void;
   onEdit: (goal: SavingsGoal) => void;
   onDelete: (goalId: string) => void;
 }
@@ -53,6 +55,7 @@ export function SavingsGoalDetailSheet({
   onOpenChange,
   onDeposit,
   onWithdraw,
+  onInterest,
   onEdit,
   onDelete,
 }: SavingsGoalDetailSheetProps) {
@@ -186,7 +189,7 @@ export function SavingsGoalDetailSheet({
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               variant="outline"
               className="flex-1"
@@ -194,6 +197,14 @@ export function SavingsGoalDetailSheet({
             >
               <TrendingUp className="h-4 w-4 mr-2" />
               Depositar
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => onInterest(goal)}
+            >
+              <Percent className="h-4 w-4 mr-2" />
+              Rendimento
             </Button>
             <Button
               variant="outline"

@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Target, Plus, PiggyBank, Trash2, Edit2, PieChart, Wallet, Calendar, TrendingUp, Minus, Sparkles, ClipboardList, RefreshCcw, Layers, Scale } from "lucide-react";
+import { Target, Plus, PiggyBank, Trash2, Edit2, PieChart, Wallet, Calendar, TrendingUp, Minus, Sparkles, ClipboardList, RefreshCcw, Layers, Scale, Percent } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CategorySelector } from "@/components/forms/CategorySelector";
 import { IconPicker } from "@/components/forms/IconPicker";
@@ -59,7 +59,7 @@ export default function Planning() {
   const [activeTab, setActiveTab] = useState(defaultTab);
   
   const { budgets, isLoading: budgetsLoading, createBudget, updateBudget, deleteBudget } = useBudgets();
-  const { savingsGoals, isLoading: goalsLoading, createSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contribute, withdraw } = useSavingsGoals();
+  const { savingsGoals, isLoading: goalsLoading, createSavingsGoal, updateSavingsGoal, deleteSavingsGoal, contribute, withdraw, addInterest } = useSavingsGoals();
   const { getCategoriesByType, getCategoryPath } = useCategories();
   const { accounts } = useAccounts();
   const { getAIFeedback, feedback: aiFeedback, isLoading: aiLoading, error: aiError, clearFeedback } = useSavingsGoalAI();
@@ -90,6 +90,12 @@ export default function Planning() {
   const [contributeAmount, setContributeAmount] = useState(0);
   const [contributeAccountId, setContributeAccountId] = useState('');
   const [isWithdraw, setIsWithdraw] = useState(false);
+
+  // Interest dialog state
+  const [interestOpen, setInterestOpen] = useState(false);
+  const [interestGoal, setInterestGoal] = useState<SavingsGoal | null>(null);
+  const [interestAmount, setInterestAmount] = useState(0);
+  const [interestDescription, setInterestDescription] = useState('');
 
   // Detail sheet state
   const [detailGoal, setDetailGoal] = useState<SavingsGoal | null>(null);
@@ -230,6 +236,42 @@ export default function Planning() {
     setContributeGoal(goal);
     setIsWithdraw(withdraw);
     setContributeOpen(true);
+  };
+
+  const openInterestDialog = (goal: SavingsGoal) => {
+    setInterestGoal(goal);
+    setInterestAmount(0);
+    setInterestDescription('');
+    setInterestOpen(true);
+  };
+
+  const handleInterestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!interestGoal || interestAmount <= 0) return;
+
+    const goalId = interestGoal.id;
+    const goalToAnalyze = interestGoal;
+    const amount = interestAmount;
+
+    await addInterest.mutateAsync({
+      id: goalId,
+      amount,
+      description: interestDescription || undefined,
+    });
+
+    // Close dialog
+    setInterestOpen(false);
+    setInterestGoal(null);
+    setInterestAmount(0);
+    setInterestDescription('');
+
+    // Trigger AI feedback with updated goal data
+    setActiveAIGoalId(goalId);
+    const updatedGoal = {
+      ...goalToAnalyze,
+      current_amount: goalToAnalyze.current_amount + amount,
+    };
+    await getAIFeedback(updatedGoal, 'contribution', amount);
   };
 
   const handleRequestAIAnalysis = async (goal: SavingsGoal) => {
@@ -940,12 +982,79 @@ export default function Planning() {
           setDetailSheetOpen(false);
           openContributeDialog(goal, true);
         }}
+        onInterest={(goal) => {
+          setDetailSheetOpen(false);
+          openInterestDialog(goal);
+        }}
         onEdit={(goal) => {
           setDetailSheetOpen(false);
           handleGoalEdit(goal);
         }}
         onDelete={handleGoalDelete}
       />
+
+      {/* Interest/Yield Dialog */}
+      <Dialog open={interestOpen} onOpenChange={(v) => { setInterestOpen(v); if (!v) { setInterestGoal(null); setInterestAmount(0); setInterestDescription(''); } }}>
+        <DialogContent className="sm:max-w-sm bg-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Percent className="h-5 w-5 text-success" />
+              Adicionar Rendimento
+            </DialogTitle>
+          </DialogHeader>
+          {interestGoal && (
+            <form onSubmit={handleInterestSubmit} className="space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: interestGoal.color + '20' }}
+                >
+                  <DynamicIcon name={interestGoal.icon} className="h-5 w-5" style={{ color: interestGoal.color }} />
+                </div>
+                <div>
+                  <p className="font-medium">{interestGoal.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Saldo atual: {formatCurrency(interestGoal.current_amount)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interest-amount">Valor do Rendimento</Label>
+                <CurrencyField
+                  id="interest-amount"
+                  value={interestAmount}
+                  onChange={setInterestAmount}
+                  placeholder="R$ 0,00"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interest-description">Descrição (opcional)</Label>
+                <Input
+                  id="interest-description"
+                  value={interestDescription}
+                  onChange={(e) => setInterestDescription(e.target.value)}
+                  placeholder="Ex: Juros de janeiro, CDI do mês..."
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                O rendimento será adicionado diretamente ao cofrinho sem movimentar contas.
+              </p>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-success hover:bg-success/90" 
+                disabled={addInterest.isPending || interestAmount <= 0}
+              >
+                {addInterest.isPending ? 'Processando...' : 'Adicionar Rendimento'}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
